@@ -1,7 +1,7 @@
 <template>
   <nav class="app-nav">
-    <div class="container">
-      <div class="nav-content">
+    <div class="nav-wrapper">
+      <div class="container nav-content">
         <!-- Logo -->
         <router-link to="/" class="nav-logo">
           <span class="logo-icon">💻</span>
