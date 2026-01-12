@@ -1,0 +1,32 @@
+# FastAPI核心依赖（使用最新版本，支持Python 3.14）
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.6
+pydantic-settings==2.7.1
+
+# 数据库（MySQL）
+sqlalchemy==2.0.36
+aiomysql==0.2.0
+pymysql==1.1.1
+cryptography==44.0.0
+
+# Redis缓存
+redis==5.2.1
+hiredis==3.3.0
+
+# 认证和安全
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.20
+
+# HTTP客户端
+httpx==0.28.1
+aiohttp==3.11.11
+
+# 工具库
+python-dateutil==2.9.0
+pytz==2024.2
+
+# 开发工具
+pytest==8.3.4
+pytest-asyncio==0.25.2
