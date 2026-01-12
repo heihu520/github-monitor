@@ -61,8 +61,8 @@ const menuItems = ref<MenuItem[]>([
 .nav-content {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   height: 64px;
+  gap: var(--spacing-2xl);
 }
 
 /* Logo */
@@ -98,9 +98,11 @@ const menuItems = ref<MenuItem[]>([
 
 /* 菜单 */
 .nav-menu {
+  flex: 1;
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  justify-content: center;
+  gap: var(--spacing-md);
 }
 
 .nav-item {
