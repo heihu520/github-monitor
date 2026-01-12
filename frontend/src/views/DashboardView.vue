@@ -6,8 +6,13 @@
       <div class="dashboard-content">
         <!-- 页面标题 -->
         <div class="page-header">
-          <h1 class="page-title">📊 代码追踪仪表盘</h1>
-          <p class="page-subtitle">实时监控你的编码活动和生产力指标</p>
+          <div class="header-content">
+            <span class="header-icon">📊</span>
+            <div>
+              <h1 class="page-title">代码追踪仪表盘</h1>
+              <p class="page-subtitle">实时监控你的编码活动和生产力指标</p>
+            </div>
+          </div>
         </div>
 
         <!-- 统计卡片网格 -->

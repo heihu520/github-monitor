@@ -85,10 +85,7 @@ const menuItems = ref<MenuItem[]>([
   font-family: var(--font-title);
   font-size: 1.25rem;
   font-weight: 700;
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--primary-blue);
   letter-spacing: 1px;
 }
 
