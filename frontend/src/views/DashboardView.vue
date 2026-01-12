@@ -16,7 +16,7 @@
             icon="📊"
             label="今日提交"
             :value="stats.todayCommits"
-            :trend="15"
+            :trend="todayTrend"
             variant="primary"
           />
           <StatCard
@@ -24,7 +24,7 @@
             label="代码行数"
             :value="stats.codeLines"
             unit="行"
-            :trend="8"
+            :trend="weekTrend"
             variant="success"
           />
           <StatCard
@@ -40,7 +40,7 @@
             label="工作时长"
             :value="stats.workHours"
             unit="小时"
-            :trend="-5"
+            :trend="weekTrend"
             variant="primary"
           />
         </div>
@@ -102,78 +102,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, computed } from 'vue'
 import AppNav from '@/components/AppNav.vue'
 import TechCard from '@/components/TechCard.vue'
 import StatCard from '@/components/StatCard.vue'
+import { useStatsStore } from '@/stores'
 
-interface Stats {
-  todayCommits: number
-  codeLines: number
-  streakDays: number
-  workHours: number
-}
+// 使用统计数据 store
+const statsStore = useStatsStore()
 
-interface Activity {
-  id: number
-  icon: string
-  title: string
-  time: string
-  type: string
-  typeLabel: string
-}
+// 从 store 获取数据
+const stats = computed(() => statsStore.dashboardStats)
+const recentActivities = computed(() => statsStore.recentActivities)
+const todayTrend = computed(() => statsStore.todayTrend)
+const weekTrend = computed(() => statsStore.weekTrend)
 
-// 模拟统计数据
-const stats = ref<Stats>({
-  todayCommits: 8,
-  codeLines: 1234,
-  streakDays: 42,
-  workHours: 4.5
+// 组件挂载时加载数据
+onMounted(async () => {
+  await statsStore.refreshAllData()
 })
-
-// 模拟最近活动
-const recentActivities = ref<Activity[]>([
-  {
-    id: 1,
-    icon: '✨',
-    title: 'feat: 添加用户认证功能',
-    time: '2分钟前',
-    type: 'feat',
-    typeLabel: '功能'
-  },
-  {
-    id: 2,
-    icon: '🐛',
-    title: 'fix: 修复登录页面样式问题',
-    time: '15分钟前',
-    type: 'fix',
-    typeLabel: '修复'
-  },
-  {
-    id: 3,
-    icon: '📝',
-    title: 'docs: 更新API文档',
-    time: '1小时前',
-    type: 'docs',
-    typeLabel: '文档'
-  },
-  {
-    id: 4,
-    icon: '🎨',
-    title: 'style: 优化按钮组件样式',
-    time: '2小时前',
-    type: 'style',
-    typeLabel: '样式'
-  },
-  {
-    id: 5,
-    icon: '⚡',
-    title: 'perf: 优化数据加载性能',
-    time: '3小时前',
-    type: 'perf',
-    typeLabel: '性能'
-  }
-])
 </script>
 
 <style scoped>

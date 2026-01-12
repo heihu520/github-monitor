@@ -84,20 +84,18 @@
   }
 }
 
-/* 路由过渡动画 */
-.fade-enter-active,
+/* 路由过渡动画 - 简单淡入淡出避免抖动 */
+.fade-enter-active {
+  transition: opacity 0.15s ease-in;
+}
+
 .fade-leave-active {
-  transition: all 0.3s ease;
+  transition: opacity 0.15s ease-out;
 }
 
-.fade-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
+.fade-enter-from,
 .fade-leave-to {
   opacity: 0;
-  transform: translateY(-20px);
 }
 
 /* 移动端优化 */
