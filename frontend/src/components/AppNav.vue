@@ -100,6 +100,7 @@ const menuItems = ref<MenuItem[]>([
   align-items: center;
   justify-content: center;
   gap: var(--spacing-lg);
+  margin-left: -125px;  /* 负值向左移，可调整大小 */
 }
 
 .nav-item {
