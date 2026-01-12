@@ -23,7 +23,7 @@
 
         <!-- 用户区域 -->
         <div class="nav-user">
-          <TechButton size="small" type="ghost" icon="⚙️">设置</TechButton>
+          <TechButton size="medium" type="ghost" icon="⚙️">设置</TechButton>
         </div>
       </div>
     </div>
