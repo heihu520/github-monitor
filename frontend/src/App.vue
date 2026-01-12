@@ -60,10 +60,10 @@
   background: linear-gradient(
     90deg,
     transparent,
-    var(--neon-blue),
+    var(--primary-blue),
     transparent
   );
-  box-shadow: 0 0 20px var(--neon-blue);
+  box-shadow: 0 0 20px var(--primary-blue);
   animation: scan 8s linear infinite;
 }
 
