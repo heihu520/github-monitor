@@ -20,8 +20,6 @@
 </template>
 
 <script setup lang="ts">
-import { withDefaults, defineProps, defineEmits } from 'vue'
-
 interface Props {
   type?: 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'ghost'
   size?: 'small' | 'medium' | 'large'
