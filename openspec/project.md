@@ -6,7 +6,10 @@ GitHub仓库监控工具 - 一个用于追踪和分析GitHub仓库活动和统�
 ## 技术栈
 - **后端**: Python 3.9+, FastAPI
 - **前端**: Vue.js 3.x, TypeScript
-- **数据库**: PostgreSQL (用于持久化存储), Redis (用于缓存)
+- **数据库**: MySQL 8.0+ (用于持久化存储), Redis (用于缓存)
+  - MySQL用户: hadoop
+  - MySQL密码: hadoop
+  - 数据库名: github_monitor
 - **API集成**: GitHub REST API, GitHub GraphQL API
 - **部署**: Docker, Docker Compose
 - **测试**: pytest (后端), Vitest (前端)
@@ -104,7 +107,10 @@ GitHub仓库监控工具 - 一个用于追踪和分析GitHub仓库活动和统�
 - Webhooks用于实时更新（可选功能）
 
 ### 数据存储
-- PostgreSQL 13+: 主数据存储
+- MySQL 8.0+: 主数据存储
+  - 用户名: hadoop
+  - 密码: hadoop
+  - 数据库: github_monitor
 - Redis 6+: 缓存和会话管理
 
 ### 监控和日志

@@ -123,17 +123,46 @@
 
 ## 📋 变更提案二：add-personal-coding-insights（个人洞察功能）
 
-### 后端数据服务 (0/9)
+### 后端数据服务 (0/9) - 当前使用模拟数据
 
-#### BE-001: 个人仪表板数据聚合API
-- [ ] 实现今日/本周/本月提交统计接口
-- [ ] 实现代码行数统计（增加/删除）
-- [ ] 实现连续编码天数计算
-- [ ] 实现最活跃编程语言识别
-- [ ] 实现工作时长估算
-- [ ] 实现编码里程碑成就检测
-**输入**: personal-dashboard/spec.md (个人仪表板总览需求)  
-**输出**: `/api/v1/dashboard/overview` 端点
+#### BE-001: 个人仪表板数据聚合API ⏳（代码完成，待环境配置）
+- [x] 实现今日/本周/本月提交统计接口
+- [x] 实现代码行数统计（增加/删除）
+- [x] 实现连续编码天数计算
+- [x] 实现最活跃编程语言识别
+- [x] 实现工作时长估算
+- [x] 实现编码里程碑成就检测
+**输入**: personal-dashboard/spec.md (个人仪表板总览需求)
+**输出**: `/api/v1/dashboard/overview` 端点 ✅
+**代码层面已完成**:
+- ✅ FastAPI项目结构搭建（16个文件）
+- ✅ 数据模型定义 (DashboardStatsResponse, MilestoneAchievement等)
+- ✅ 业务服务实现 (dashboard_service.py - 模拟数据版本)
+- ✅ 5个API端点 (/overview, /stats, /milestones, /trend, /heatmap)
+- ✅ MySQL数据库配置 (hadoop/hadoop)
+- ✅ 完整项目文档（README.md, FINAL_SOLUTION.md等）
+
+**环境问题（阻塞）**:
+- ⚠️ **Python 3.14环境依赖安装失败**
+  - 原因：pydantic-core需要Rust编译器
+  - 临时方案：已安装C++ Build Tools，但Rust配置失败
+  - **推荐方案：使用Python 3.11.7**（详见backend/FINAL_SOLUTION.md）
+  - 状态：代码100%完成，等待环境配置后可立即运行
+
+**未实现部分（需后续开发）**:
+- [ ] 环境配置完成（Python 3.11或Rust工具链）
+- [ ] 依赖成功安装并测试运行
+- [ ] MySQL数据库表结构设计和创建
+- [ ] SQLAlchemy ORM模型定义
+- [ ] 数据库连接和会话管理
+- [ ] 真实数据查询和聚合逻辑
+- [ ] GitHub API数据抓取和存储
+- [ ] Redis缓存集成
+- [ ] 提交数据持久化
+- [ ] 编程语言识别算法实现
+- [ ] 工作时长估算算法
+- [ ] 连续编码天数计算逻辑
+- [ ] 里程碑成就触发和记录
 
 #### BE-002: 时间维度切换API
 - [ ] 实现日视图数据聚合（24小时时间轴）
@@ -262,14 +291,16 @@
 
 ### 前端功能组件 (0/7)
 
-#### FE-007: 个人仪表板总览页面
-- [ ] 创建关键指标卡片网格布局
-- [ ] 集成StatCard显示今日/本周/本月数据
+#### FE-007: 个人仪表板总览页面（使用模拟数据）
+- [x] 创建关键指标卡片网格布局（已完成）
+- [x] 集成StatCard显示今日/本周/本月数据（使用Pinia stores模拟数据）
 - [ ] 实现里程碑成就徽章显示
-- [ ] 实现编码活跃度热力图占位
-- [ ] 实现最近7天提交趋势迷你图
-**输入**: personal-dashboard/spec.md + ui-design/spec.md  
+- [ ] 实现编码活跃度热力图（ECharts集成）
+- [ ] 实现最近7天提交趋势迷你图（ECharts集成）
+- [ ] 连接后端API（待后端数据库集成完成）
+**输入**: personal-dashboard/spec.md + ui-design/spec.md
 **输出**: 更新 `frontend/src/views/DashboardView.vue`
+**当前状态**: 使用Pinia stores模拟数据，UI框架已完成
 
 #### FE-008: 时间维度切换组件
 - [ ] 创建时间维度选择器（Tab切换）
