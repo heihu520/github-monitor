@@ -37,6 +37,10 @@ class Settings(BaseSettings):
     # GitHub API配置
     GITHUB_API_URL: str = "https://api.github.com"
     GITHUB_GRAPHQL_URL: str = "https://api.github.com/graphql"
+    GITHUB_TOKEN: str = Field(
+        default="",
+        description="GitHub Personal Access Token"
+    )
     
     # JWT密钥
     SECRET_KEY: str = Field(
@@ -52,6 +56,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = True
+        extra = "allow"  # 允许额外字段
 
 
 settings = Settings()
