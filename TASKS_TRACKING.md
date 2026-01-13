@@ -585,14 +585,52 @@
 
 ### 新增任务模块：后端业务逻辑开发
 
-#### BE-API-001: GitHub数据抓取服务
-- [ ] 创建GitHub API客户端封装类
-- [ ] 实现用户仓库列表获取
-- [ ] 实现仓库提交历史抓取
-- [ ] 实现提交详情解析（代码行数、文件变更）
-- [ ] 实现速率限制处理和重试机制
-**输入**: GitHub Token, 用户名
-**输出**: `backend/app/services/github_service.py`
+#### BE-API-001: GitHub数据抓取服务 (0/5)
+
+**BE-API-001-1**: 创建GitHub API客户端基础类
+- [ ] 创建GitHubClient类结构
+- [ ] 配置GitHub Token认证
+- [ ] 实现基础HTTP请求封装
+- [ ] 添加请求头和User-Agent
+- [ ] 实现错误响应处理
+**输入**: GitHub Token from settings
+**输出**: `backend/app/services/github_client.py` 基础类
+
+**BE-API-001-2**: 实现用户仓库列表获取
+- [ ] 实现get_user_repos()方法
+- [ ] 解析仓库列表响应
+- [ ] 提取仓库基本信息（name, stars, language等）
+- [ ] 处理分页查询（100+仓库）
+- [ ] 测试仓库列表获取
+**输入**: GitHub username
+**输出**: Repository列表数据
+
+**BE-API-001-3**: 实现仓库提交历史抓取
+- [ ] 实现get_repo_commits()方法
+- [ ] 支持时间范围筛选（since, until）
+- [ ] 解析提交列表响应
+- [ ] 提取提交基本信息（sha, message, date, author）
+- [ ] 处理分页（每页100条）
+**输入**: repo_name, date_range
+**输出**: Commit列表数据
+
+**BE-API-001-4**: 实现提交详情解析
+- [ ] 实现get_commit_details()方法
+- [ ] 获取文件变更列表
+- [ ] 解析additions和deletions
+- [ ] 识别文件编程语言
+- [ ] 计算总代码变更量
+**输入**: commit_sha
+**输出**: CommitDetail数据
+
+**BE-API-001-5**: 实现速率限制处理
+- [ ] 检查剩余API配额
+- [ ] 实现自动等待重试机制
+- [ ] 添加速率限制日志记录
+- [ ] 实现请求优先级队列
+- [ ] 测试速率限制场景
+**输入**: API响应头
+**输出**: 速率限制装饰器/中间件
 
 #### BE-API-002: 数据持久化服务
 - [ ] 实现用户数据存储
