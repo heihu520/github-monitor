@@ -54,7 +54,8 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     
     class Config:
-        env_file = ".env"
+        env_file = "../.env"  # 相对于app/core目录
+        env_file_encoding = "utf-8"
         case_sensitive = True
         extra = "allow"  # 允许额外字段
 
