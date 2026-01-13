@@ -63,6 +63,13 @@
 
         <!-- 图表区域 -->
         <div class="charts-section">
+          <!-- 年度活跃度热力图 -->
+          <TechCard title="年度编码活跃度" icon="🔥" class="chart-card heatmap-card">
+            <div class="chart-container chart-heatmap">
+              <HeatmapChart :data="heatmapData" />
+            </div>
+          </TechCard>
+
           <TechCard title="提交趋势" icon="📈" class="chart-card">
             <div class="chart-container">
               <CommitTrendChart :data="trendData" />
@@ -117,6 +124,7 @@ import CommitTrendChart from '@/components/CommitTrendChart.vue'
 import LanguagePieChart from '@/components/LanguagePieChart.vue'
 import HourlyActivityChart from '@/components/HourlyActivityChart.vue'
 import MilestoneBadge from '@/components/MilestoneBadge.vue'
+import HeatmapChart from '@/components/charts/HeatmapChart.vue'
 import { useStatsStore } from '@/stores'
 
 // 使用统计数据 store
@@ -127,6 +135,7 @@ const stats = computed(() => statsStore.dashboardStats)
 const recentActivities = computed(() => statsStore.recentActivities)
 const trendData = computed(() => statsStore.trendData)
 const languageStats = computed(() => statsStore.languageStats)
+const heatmapData = computed(() => statsStore.heatmapData)
 const todayTrend = computed(() => statsStore.todayTrend)
 const weekTrend = computed(() => statsStore.weekTrend)
 
@@ -236,6 +245,18 @@ onMounted(async () => {
 
 .chart-small {
   height: 250px;
+}
+
+.chart-heatmap {
+  height: 220px;
+}
+
+.heatmap-card {
+  overflow: visible !important;
+}
+
+.heatmap-card :deep(.card-body) {
+  overflow: visible;
 }
 
 .chart-placeholder {

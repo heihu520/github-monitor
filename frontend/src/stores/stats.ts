@@ -53,6 +53,12 @@ export interface Milestone {
   category: 'coding' | 'streak' | 'language' | 'special'
 }
 
+export interface HeatmapData {
+  date: string // YYYY-MM-DD格式
+  commits: number
+  level: number // 0-4，用于颜色映射
+}
+
 /**
  * 统计数据管理 Store
  * 管理仪表盘统计数据、活动记录、语言分布等
@@ -81,6 +87,9 @@ export const useStatsStore = defineStore('stats', () => {
 
   // 成就里程碑数据
   const milestones = ref<Milestone[]>([])
+
+  // 年度活跃度热力图数据
+  const heatmapData = ref<HeatmapData[]>([])
 
   // 加载状态
   const isLoading = ref<boolean>(false)
@@ -356,6 +365,54 @@ export const useStatsStore = defineStore('stats', () => {
   }
 
   /**
+   * 生成年度活跃度热力图数据
+   */
+  function generateHeatmapData(): HeatmapData[] {
+    const data: HeatmapData[] = []
+    const now = new Date()
+    const oneYearAgo = new Date(now)
+    oneYearAgo.setFullYear(now.getFullYear() - 1)
+    
+    // 生成过去365天的数据
+    for (let d = new Date(oneYearAgo); d <= now; d.setDate(d.getDate() + 1)) {
+      const dateStr = d.toISOString().split('T')[0]
+      const commits = Math.floor(Math.random() * 20) // 0-19次提交
+      
+      // 计算颜色等级 (0-4)
+      let level = 0
+      if (commits === 0) level = 0
+      else if (commits <= 3) level = 1
+      else if (commits <= 6) level = 2
+      else if (commits <= 10) level = 3
+      else level = 4
+      
+      data.push({
+        date: dateStr,
+        commits,
+        level
+      })
+    }
+    
+    return data
+  }
+
+  /**
+   * 从API获取年度活跃度数据
+   */
+  async function fetchHeatmapData() {
+    try {
+      // TODO: 实际API调用
+      // const response = await api.getHeatmapData()
+      // heatmapData.value = response.data
+      
+      // 暂时使用模拟数据
+      heatmapData.value = generateHeatmapData()
+    } catch (error) {
+      console.error('Failed to fetch heatmap data:', error)
+    }
+  }
+
+  /**
    * 刷新所有数据
    */
   async function refreshAllData() {
@@ -364,7 +421,8 @@ export const useStatsStore = defineStore('stats', () => {
       fetchRecentActivities(),
       fetchLanguageStats(),
       fetchTrendData(),
-      fetchMilestones()
+      fetchMilestones(),
+      fetchHeatmapData()
     ])
   }
 
@@ -386,6 +444,7 @@ export const useStatsStore = defineStore('stats', () => {
     languageStats.value = []
     trendData.value = []
     milestones.value = []
+    heatmapData.value = []
     lastUpdated.value = null
   }
 
@@ -396,6 +455,7 @@ export const useStatsStore = defineStore('stats', () => {
     languageStats,
     trendData,
     milestones,
+    heatmapData,
     isLoading,
     lastUpdated,
     
@@ -415,6 +475,7 @@ export const useStatsStore = defineStore('stats', () => {
     fetchLanguageStats,
     fetchTrendData,
     fetchMilestones,
+    fetchHeatmapData,
     refreshAllData,
     reset
   }
