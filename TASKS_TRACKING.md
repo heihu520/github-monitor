@@ -133,18 +133,20 @@
 
 ### 后端数据服务 (0/9) - 当前使用模拟数据
 
-#### BE-DB: 数据库初始化 ✅（已完成）
+#### BE-DB: 数据库基础设施 ✅（已完成 5/5）
 - [x] BE-DB-001: 创建数据库初始化SQL脚本
-  - 创建8个核心数据表（users, repositories, daily_stats, commit_details, language_stats, milestone_achievements, coding_goals）
-  - 定义表关系和索引
-  - 添加测试数据
-- [ ] BE-DB-002: 执行数据库初始化
-  - 需要手动执行 `backend/scripts/run_init_db.bat`
-  - 或使用MySQL客户端执行 `init_database.sql`
+- [x] BE-DB-002: 创建SQLAlchemy ORM模型（7个模型类）
+- [x] BE-DB-003: 实现数据库连接管理（异步引擎+会话）
+- [x] BE-DB-004: 配置Alembic迁移工具
+- [x] BE-DB-005: 验证数据库连接（5/5测试通过）
+
 **交付物**:
-- `backend/scripts/init_database.sql` - 完整的数据库初始化脚本
-- `backend/scripts/run_init_db.bat` - Windows批处理执行脚本
-- `backend/scripts/README.md` - 详细使用说明文档
+- 8个数据库表SQL脚本 + Python执行脚本
+- 7个SQLAlchemy ORM模型（User, Repository, DailyStat等）
+- 异步数据库引擎和会话管理
+- Alembic迁移配置和文档
+- 完整测试套件（test_db_connection.py）
+- 4个Git提交记录
 
 #### BE-001: 个人仪表板数据聚合API ⏳（代码完成，待数据库配置）
 - [x] 实现今日/本周/本月提交统计接口
@@ -579,10 +581,60 @@
 4. ✅ **环境配置指南** - Python 3.11方案文档
 5. ✅ **Python环境配置** - Python 3.11.7环境搭建完成
 6. ✅ **后端依赖安装** - 所有依赖包成功安装
+7. ✅ **数据库基础设施** - ORM模型、连接管理、迁移工具全部完成
+
+### 新增任务模块：后端业务逻辑开发
+
+#### BE-API-001: GitHub数据抓取服务
+- [ ] 创建GitHub API客户端封装类
+- [ ] 实现用户仓库列表获取
+- [ ] 实现仓库提交历史抓取
+- [ ] 实现提交详情解析（代码行数、文件变更）
+- [ ] 实现速率限制处理和重试机制
+**输入**: GitHub Token, 用户名
+**输出**: `backend/app/services/github_service.py`
+
+#### BE-API-002: 数据持久化服务
+- [ ] 实现用户数据存储
+- [ ] 实现仓库数据存储
+- [ ] 实现提交数据批量插入
+- [ ] 实现语言统计数据更新
+- [ ] 实现每日统计数据聚合
+**输入**: GitHub抓取数据
+**输出**: `backend/app/services/data_sync_service.py`
+
+#### BE-API-003: 仪表板API真实数据集成
+- [ ] 修改dashboard_service.py使用真实数据库查询
+- [ ] 实现今日/本周/本月统计聚合
+- [ ] 实现连续编码天数计算算法
+- [ ] 实现里程碑成就检测逻辑
+- [ ] 测试所有API端点返回真实数据
+**输入**: 数据库ORM查询
+**输出**: 更新后的`dashboard_service.py`
+
+#### BE-API-004: 后台定时任务
+- [ ] 配置Celery任务队列
+- [ ] 创建定时数据同步任务（每小时）
+- [ ] 创建每日统计聚合任务
+- [ ] 创建里程碑检测任务
+- [ ] 实现任务监控和错误告警
+**输入**: Celery + Redis配置
+**输出**: `backend/app/tasks/` 目录
+
+#### BE-API-005: FastAPI应用启动测试
+- [ ] 启动FastAPI开发服务器
+- [ ] 测试/health端点
+- [ ] 测试/api/v1/dashboard/overview端点
+- [ ] 使用Postman/curl验证API响应
+- [ ] 解决启动过程中的错误
+**输入**: uvicorn命令
+**输出**: 运行中的API服务
 
 ### 立即执行（优先级P0）
-1. **BE-DB**: 配置MySQL数据库连接
-3. **API-CONNECT**: 前端对接真实后端API
+1. ✅ ~~BE-DB配置~~ 已完成
+2. **BE-API-001**: GitHub数据抓取服务
+3. **BE-API-002**: 数据持久化服务
+4. **BE-API-005**: FastAPI应用启动测试
 
 ### 短期计划（优先级P1）
 4. **FE-HEATMAP**: 实现GitHub风格编码活跃度热力图
