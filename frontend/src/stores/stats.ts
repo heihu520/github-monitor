@@ -40,6 +40,19 @@ export interface TrendData {
   deletions: number
 }
 
+export interface Milestone {
+  id: string
+  title: string
+  description: string
+  icon: string
+  level: 'bronze' | 'silver' | 'gold' | 'diamond' | 'legendary'
+  unlocked: boolean
+  unlockedAt?: Date
+  progress?: number
+  target?: number
+  category: 'coding' | 'streak' | 'language' | 'special'
+}
+
 /**
  * 统计数据管理 Store
  * 管理仪表盘统计数据、活动记录、语言分布等
@@ -65,6 +78,9 @@ export const useStatsStore = defineStore('stats', () => {
 
   // 趋势数据
   const trendData = ref<TrendData[]>([])
+
+  // 成就里程碑数据
+  const milestones = ref<Milestone[]>([])
 
   // 加载状态
   const isLoading = ref<boolean>(false)
@@ -261,6 +277,85 @@ export const useStatsStore = defineStore('stats', () => {
   }
 
   /**
+   * 从API获取成就里程碑数据
+   */
+  async function fetchMilestones() {
+    try {
+      // TODO: 实际API调用
+      // const response = await api.getMilestones()
+      // milestones.value = response.data
+      
+      // 暂时使用模拟数据
+      milestones.value = [
+        {
+          id: 'first-commit',
+          title: '初次提交',
+          description: '完成第一次代码提交',
+          icon: '🎉',
+          level: 'bronze',
+          unlocked: true,
+          unlockedAt: new Date('2024-01-01'),
+          category: 'coding'
+        },
+        {
+          id: 'streak-7',
+          title: '七日连击',
+          description: '连续编码7天',
+          icon: '🔥',
+          level: 'silver',
+          unlocked: true,
+          unlockedAt: new Date('2024-01-08'),
+          category: 'streak'
+        },
+        {
+          id: 'commits-100',
+          title: '百次提交',
+          description: '累计完成100次提交',
+          icon: '💯',
+          level: 'gold',
+          unlocked: true,
+          unlockedAt: new Date('2024-02-15'),
+          category: 'coding'
+        },
+        {
+          id: 'streak-30',
+          title: '月度坚持',
+          description: '连续编码30天',
+          icon: '🏆',
+          level: 'diamond',
+          unlocked: false,
+          progress: 42,
+          target: 30,
+          category: 'streak'
+        },
+        {
+          id: 'polyglot',
+          title: '语言大师',
+          description: '掌握5种编程语言',
+          icon: '🌟',
+          level: 'legendary',
+          unlocked: false,
+          progress: 8,
+          target: 5,
+          category: 'language'
+        },
+        {
+          id: 'night-owl',
+          title: '夜猫子',
+          description: '凌晨2点后提交代码50次',
+          icon: '🦉',
+          level: 'silver',
+          unlocked: true,
+          unlockedAt: new Date('2024-03-01'),
+          category: 'special'
+        }
+      ]
+    } catch (error) {
+      console.error('Failed to fetch milestones:', error)
+    }
+  }
+
+  /**
    * 刷新所有数据
    */
   async function refreshAllData() {
@@ -268,7 +363,8 @@ export const useStatsStore = defineStore('stats', () => {
       fetchDashboardStats(),
       fetchRecentActivities(),
       fetchLanguageStats(),
-      fetchTrendData()
+      fetchTrendData(),
+      fetchMilestones()
     ])
   }
 
@@ -289,6 +385,7 @@ export const useStatsStore = defineStore('stats', () => {
     recentActivities.value = []
     languageStats.value = []
     trendData.value = []
+    milestones.value = []
     lastUpdated.value = null
   }
 
@@ -298,6 +395,7 @@ export const useStatsStore = defineStore('stats', () => {
     recentActivities,
     languageStats,
     trendData,
+    milestones,
     isLoading,
     lastUpdated,
     
@@ -316,6 +414,7 @@ export const useStatsStore = defineStore('stats', () => {
     fetchRecentActivities,
     fetchLanguageStats,
     fetchTrendData,
+    fetchMilestones,
     refreshAllData,
     reset
   }

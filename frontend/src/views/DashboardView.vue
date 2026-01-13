@@ -10,6 +10,22 @@
           <p class="page-subtitle">实时监控你的编码活动和生产力指标</p>
         </div>
 
+        <!-- 里程碑成就徽章区域 -->
+        <TechCard
+          v-if="unlockedMilestones.length > 0"
+          title="最近成就"
+          icon="🏆"
+          class="milestones-card"
+        >
+          <div class="milestones-grid">
+            <MilestoneBadge
+              v-for="milestone in displayMilestones"
+              :key="milestone.id"
+              :milestone="milestone"
+            />
+          </div>
+        </TechCard>
+
         <!-- 统计卡片网格 -->
         <div class="stats-grid">
           <StatCard
@@ -100,6 +116,7 @@ import StatCard from '@/components/StatCard.vue'
 import CommitTrendChart from '@/components/CommitTrendChart.vue'
 import LanguagePieChart from '@/components/LanguagePieChart.vue'
 import HourlyActivityChart from '@/components/HourlyActivityChart.vue'
+import MilestoneBadge from '@/components/MilestoneBadge.vue'
 import { useStatsStore } from '@/stores'
 
 // 使用统计数据 store
@@ -112,6 +129,28 @@ const trendData = computed(() => statsStore.trendData)
 const languageStats = computed(() => statsStore.languageStats)
 const todayTrend = computed(() => statsStore.todayTrend)
 const weekTrend = computed(() => statsStore.weekTrend)
+
+// 成就里程碑数据
+const unlockedMilestones = computed(() =>
+  statsStore.milestones.filter(m => m.unlocked)
+)
+
+// 显示最近解锁的6个成就
+const displayMilestones = computed(() => {
+  const unlocked = unlockedMilestones.value
+    .sort((a, b) => {
+      if (!a.unlockedAt || !b.unlockedAt) return 0
+      return new Date(b.unlockedAt).getTime() - new Date(a.unlockedAt).getTime()
+    })
+    .slice(0, 6)
+  
+  // 如果解锁成就少于6个，添加一些未解锁的成就
+  const locked = statsStore.milestones
+    .filter(m => !m.unlocked)
+    .slice(0, Math.max(0, 6 - unlocked.length))
+  
+  return [...unlocked, ...locked]
+})
 
 // 组件挂载时加载数据
 onMounted(async () => {
@@ -127,6 +166,26 @@ onMounted(async () => {
 
 .dashboard-content {
   padding: var(--spacing-2xl) 0;
+}
+
+/* 里程碑成就区域 */
+.milestones-card {
+  margin-bottom: var(--spacing-2xl);
+  overflow: visible !important;
+}
+
+.milestones-card :deep(.card-body) {
+  overflow: visible;
+}
+
+.milestones-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(72px, 72px));
+  gap: var(--spacing-lg);
+  justify-content: center;
+  padding: var(--spacing-sm) 0;
+  max-height: 120px;
+  overflow: visible;
 }
 
 /* 页面标题 */
@@ -301,6 +360,11 @@ onMounted(async () => {
 
   .page-subtitle {
     font-size: 1rem;
+  }
+
+  .milestones-grid {
+    grid-template-columns: repeat(auto-fit, minmax(64px, 64px));
+    gap: var(--spacing-md);
   }
 }
 

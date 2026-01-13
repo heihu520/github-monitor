@@ -1,4 +1,4 @@
-# 项目任务追踪文档
+![1768275111978](image/TASKS_TRACKING/1768275111978.png)# 项目任务追踪文档
 
 **最后更新**: 2026-01-13
 **项目**: GitHub仓库监控工具 - 个人代码开发洞察系统
@@ -10,8 +10,9 @@
 | 变更提案 | 总任务数 | 已完成 | 进行中 | 待开始 | 完成率 |
 |---------|---------|--------|--------|--------|--------|
 | init-frontend-mvp | 48 | 48 | 0 | 0 | 100% |
-| add-personal-coding-insights | 33 | 3 | 0 | 30 | 9% |
-| **总计** | **81** | **51** | **0** | **30** | **63%** |
+| add-personal-coding-insights (原) | 33 | 5 | 0 | 28 | 15% |
+| **前端细化任务** | **37** | **1** | **0** | **36** | **3%** |
+| **总计** | **118** | **54** | **0** | **64** | **46%** |
 
 ---
 
@@ -149,16 +150,15 @@
 - ✅ MySQL数据库配置 (hadoop/hadoop)
 - ✅ 完整项目文档（README.md, FINAL_SOLUTION.md等）
 
-**环境问题（阻塞）**:
-- ⚠️ **Python 3.14环境依赖安装失败**
-  - 原因：pydantic-core需要Rust编译器
-  - 临时方案：已安装C++ Build Tools，但Rust配置失败
-  - **推荐方案：使用Python 3.11.7**（详见backend/FINAL_SOLUTION.md）
-  - 状态：代码100%完成，等待环境配置后可立即运行
+**环境问题**:
+- ✅ **Python环境配置已完成**
+  - 已切换到Python 3.11.7
+  - 所有依赖成功安装
+  - 状态：代码100%完成，环境配置完成
 
 **未实现部分（需后续开发）**:
-- [ ] 环境配置完成（Python 3.11或Rust工具链）
-- [ ] 依赖成功安装并测试运行
+- [x] 环境配置完成（Python 3.11）
+- [x] 依赖成功安装并测试运行
 - [ ] MySQL数据库表结构设计和创建
 - [ ] SQLAlchemy ORM模型定义
 - [ ] 数据库连接和会话管理
@@ -242,171 +242,317 @@
 
 ---
 
-### 前端UI增强（赛博朋克风格） (0/6)
+### 前端UI增强（赛博朋克风格） (0/7)
 
-#### FE-001: 赛博朋克霓虹配色系统升级
-- [ ] 更新CSS变量为霓虹蓝/紫/粉/绿配色
-- [ ] 实现渐变效果系统
-- [ ] 更新字体为赛博朋克风格（Orbitron/Exo 2）
-- [ ] 实现文字发光效果
-**输入**: ui-design/spec.md (赛博朋克配色和字体)  
+**FE-UI-001**: 霓虹配色系统升级
+- [ ] 定义霓虹蓝/紫/粉/绿CSS变量
+- [ ] 创建渐变色CSS类库
+- [ ] 实现动态主题切换
+- [ ] 更新所有组件配色
+**输入**: ui-design/spec.md
 **输出**: 更新 `frontend/src/styles/index.css`
 
-#### FE-002: 图标组件库和发光效果
-- [ ] 创建图标组件系统
-- [ ] 实现统计数据图标（发光柱状图/代码符号/火焰等）
-- [ ] 实现编程语言特色图标
-- [ ] 实现时间日期图标（早晨/下午/傍晚/深夜）
-- [ ] 实现成就徽章分级图标（铜/银/金/钻石/传奇）
-- [ ] 实现状态指示图标
-**输入**: ui-design/spec.md (精美图标系统)  
+**FE-UI-002**: 赛博朋克字体集成
+- [ ] 引入Orbitron/Exo 2字体
+- [ ] 配置字体权重和样式
+- [ ] 实现文字发光CSS效果
+- [ ] 更新全局字体系统
+**输入**: Google Fonts
+**输出**: 字体样式文件
+
+**FE-UI-003**: 图标组件库
+- [ ] 收集/设计100+SVG图标
+- [ ] 创建IconBase基础组件
+- [ ] 实现图标发光效果
+- [ ] 创建图标使用文档
+**输入**: 图标需求清单
 **输出**: `frontend/src/components/icons/` 目录
 
-#### FE-003: 霓虹发光卡片升级
-- [ ] 升级TechCard边框为霓虹发光边框
-- [ ] 添加多层次box-shadow立体发光
-- [ ] 实现背景网格线/电路板纹理
-- [ ] 实现扫描线动画效果
-**输入**: ui-design/spec.md (霓虹发光卡片)  
-**输出**: 更新 `frontend/src/components/TechCard.vue`
+**FE-UI-004**: 霓虹卡片升级
+- [ ] 升级TechCard边框样式
+- [ ] 实现多层次box-shadow
+- [ ] 添加背景网格线纹理
+- [ ] 实现扫描线动画
+**输入**: TechCard.vue
+**输出**: 更新组件样式
 
-#### FE-004: 赛博朋克按钮升级
-- [ ] 升级TechButton为霓虹渐变背景
-- [ ] 实现扫描线从左到右滑过动画
-- [ ] 实现hover发光范围扩大效果
-- [ ] 添加多种霓虹色按钮变体
-**输入**: ui-design/spec.md (赛博朋克按钮)  
-**输出**: 更新 `frontend/src/components/TechButton.vue`
+**FE-UI-005**: 按钮效果升级
+- [ ] 升级TechButton渐变背景
+- [ ] 实现扫描线动画
+- [ ] 增强hover发光效果
+- [ ] 添加5种霓虹色变体
+**输入**: TechButton.vue
+**输出**: 更新组件样式
 
-#### FE-005: 霓虹进度条和成就徽章
-- [ ] 创建霓虹进度条组件（线性和圆形）
+**FE-UI-006**: 进度条组件
+- [ ] 创建NeonProgressBar组件（线性）
+- [ ] 创建CircularProgress组件（圆形）
 - [ ] 实现流光扫过动画
-- [ ] 创建成就徽章组件（分级样式）
-- [ ] 实现徽章解锁爆裂光效动画
-**输入**: ui-design/spec.md (进度条和徽章)  
-**输出**: `frontend/src/components/ProgressBar.vue`, `AchievementBadge.vue`
+- [ ] 添加进度值动画
+**输入**: 进度展示需求
+**输出**: `frontend/src/components/NeonProgressBar.vue`
 
-#### FE-006: 动画效果系统
-- [ ] 实现页面加载Logo闪现和跑马灯
-- [ ] 实现鼠标交互动画（hover上浮/点击波纹）
-- [ ] 实现数据更新数字滚动动画
-- [ ] 实现背景微妙动画（网格脉动/光点闪烁）
-**输入**: ui-design/spec.md (动画和交互效果)  
+**FE-UI-007**: 动画系统
+- [ ] 实现页面加载动画
+- [ ] 创建交互动画库（hover/click）
+- [ ] 实现数字滚动动画
+- [ ] 添加背景粒子效果
+**输入**: 动画需求
 **输出**: `frontend/src/utils/animations.ts`
 
 ---
 
-### 前端功能组件 (3/7)
+### 前端功能组件 - 细化任务 (3/37)
 
-#### FE-007: 个人仪表板总览页面 ✅
-- [x] 创建关键指标卡片网格布局
-- [x] 集成StatCard显示今日/本周/本月数据（使用Pinia stores模拟数据）
-- [x] 实现最近7天提交趋势折线图（CommitTrendChart - ECharts集成）
-- [x] 实现语言分布饼图（LanguagePieChart - 8种语言）
-- [x] 实现24小时时段分析柱状图（HourlyActivityChart）
-- [x] 修复TechCard双图标显示问题
-- [x] 优化图表科技风格（霓虹蓝边框、发光效果）
-- [ ] 实现里程碑成就徽章显示
-- [ ] 实现编码活跃度热力图（类似GitHub贡献图）
-- [ ] 连接后端API（待后端数据库集成完成）
-**输入**: personal-dashboard/spec.md + ui-design/spec.md
-**输出**: 更新 `frontend/src/views/DashboardView.vue`
-**当前状态**: ✅ 图表可视化完成，使用模拟数据展示
+#### 1. DashboardView增强模块 (1/3)
 
-#### FE-008: 时间维度切换组件
-- [ ] 创建时间维度选择器（Tab切换）
-- [ ] 实现日视图（24小时时间轴柱状图）
-- [ ] 实现周视图（7天堆叠柱状图）
-- [ ] 实现月视图（日历热力图）
-- [ ] 实现年视图（12个月折线图）
-- [ ] 实现自定义日期范围选择器
-**输入**: personal-dashboard/spec.md (多时间维度视图)
+**FE-DASH-001**: 里程碑成就徽章组件集成 ✅
+- [x] 设计徽章数据结构和状态
+- [x] 创建徽章展示组件
+- [x] 集成到DashboardView
+- [x] 实现徽章hover效果
+**输入**: DashboardView.vue
+**输出**: 里程碑成就徽章显示区域
+**交付物**:
+- `frontend/src/stores/stats.ts` - 新增Milestone接口和模拟数据（6个成就）
+- `frontend/src/components/MilestoneBadge.vue` - 徽章组件（5级样式：铜/银/金/钻石/传奇）
+- `frontend/src/views/DashboardView.vue` - 集成徽章网格展示
+**状态**: ✅ 已完成并验证运行
+
+**FE-DASH-002**: 编码活跃度热力图组件
+- [ ] 研究GitHub贡献图实现方案
+- [ ] 创建HeatmapChart组件（ECharts/D3.js）
+- [ ] 实现日历视图数据映射
+- [ ] 添加交互提示（tooltip）
+- [ ] 集成到DashboardView
+**输入**: GitHub贡献图设计参考
+**输出**: `frontend/src/components/charts/HeatmapChart.vue`
+
+**FE-DASH-003**: 前端API集成
+- [ ] 定义API接口类型（TypeScript）
+- [ ] 创建API服务层（axios封装）
+- [ ] 替换模拟数据为真实API调用
+- [ ] 实现加载状态和错误处理
+- [ ] 添加数据缓存策略
+**输入**: 后端API端点
+**输出**: `frontend/src/services/api.ts`
+
+#### 2. TrendsView完整开发模块 (0/7)
+
+**FE-TREND-001**: 时间维度选择器组件
+- [ ] 设计Tab切换UI（日/周/月/年/自定义）
+- [ ] 创建TimeDimensionSelector组件
+- [ ] 实现选择状态管理（Pinia）
+- [ ] 添加动画过渡效果
+**输入**: TrendsView.vue布局
 **输出**: `frontend/src/components/TimeDimensionSelector.vue`
 
-#### FE-009: 热力图和趋势图表组件 ✅（部分完成）
-- [x] 集成ECharts库（v5.4.3）
-- [x] 创建提交趋势折线图组件（CommitTrendChart.vue）
-- [x] 应用赛博朋克主题到折线图
-- [ ] 创建编码活跃度热力图组件（类似GitHub）
-- [ ] 创建工作时间热力图（7天×24小时）
-**输入**: personal-dashboard/spec.md (编码活跃度)
-**输出**: `frontend/src/components/charts/` 目录
-**当前状态**: ✅ 基础图表完成，热力图待开发
+**FE-TREND-002**: 日视图图表
+- [ ] 创建24小时时间轴柱状图
+- [ ] 实现小时级别数据聚合
+- [ ] 添加时段标记（早晨/下午/傍晚/深夜）
+- [ ] 实现交互式数据探索
+**输入**: 日级别提交数据
+**输出**: `frontend/src/components/charts/DailyTimelineChart.vue`
 
-#### FE-010: 语言分布图和技能成长时间线 ✅（部分完成）
-- [x] 创建语言使用占比饼图（LanguagePieChart.vue - 环形设计）
-- [x] 增加8种编程语言数据（TypeScript, Python, JS, Vue, Go, Rust, Java, C++）
-- [x] 实现科技风格标签和霓虹蓝引导线
-- [x] 外侧显示语言名称和百分比
-- [ ] 创建语言排行榜列表
-- [ ] 创建技术栈成长时间轴
-- [ ] 创建技术栈云图（词云）
-- [ ] 实现语言图标显示
-**输入**: personal-dashboard/spec.md (语言分析)
-**输出**: `frontend/src/components/LanguageStats.vue`
-**当前状态**: ✅ 饼图完成，排行榜和时间轴待开发
+**FE-TREND-003**: 周视图图表
+- [ ] 创建7天堆叠柱状图
+- [ ] 实现多维度数据叠加（提交类型/语言）
+- [ ] 添加周对比功能
+- [ ] 实现图例交互控制
+**输入**: 周级别数据
+**输出**: `frontend/src/components/charts/WeeklyStackChart.vue`
 
-#### FE-011: 洞察卡片和建议提示组件
-- [ ] 创建每周洞察报告卡片
-- [ ] 创建个性化建议提示组件
-- [ ] 实现异常模式通知组件
-- [ ] 实现对比洞察显示
-**输入**: personal-dashboard/spec.md (智能洞察)  
-**输出**: `frontend/src/components/InsightCard.vue`
+**FE-TREND-004**: 月视图日历热力图
+- [ ] 创建日历布局组件
+- [ ] 实现日期方块颜色映射
+- [ ] 添加月份导航
+- [ ] 实现日期点击查看详情
+**输入**: 月度提交数据
+**输出**: `frontend/src/components/charts/MonthlyCalendarHeatmap.vue`
 
-#### FE-012: 目标设定和进度展示组件
-- [ ] 创建目标设定表单
-- [ ] 创建目标进度卡片
-- [ ] 实现目标完成庆祝动画
-- [ ] 实现连续达成天数徽章
-**输入**: personal-dashboard/spec.md (目标追踪)  
-**输出**: `frontend/src/components/GoalTracker.vue`
+**FE-TREND-005**: 年视图图表
+- [ ] 创建12个月折线图/柱状图
+- [ ] 实现年度趋势分析
+- [ ] 添加季度对比功能
+- [ ] 实现数据导出功能
+**输入**: 年度数据
+**输出**: `frontend/src/components/charts/AnnualTrendChart.vue`
 
-#### FE-013: 年度回顾报告可视化页面
-- [ ] 创建年度回顾页面布局
-- [ ] 实现年度数据动画展示
-- [ ] 实现交互式时间轴浏览
-- [ ] 实现年度词云和编码旅程地图
-- [ ] 实现分享到社交媒体功能
-**输入**: personal-dashboard/spec.md (年度回顾)  
-**输出**: `frontend/src/views/AnnualReviewView.vue`
+**FE-TREND-006**: 自定义日期范围选择器
+- [ ] 集成日期选择器组件（ElementPlus/AntDesign）
+- [ ] 实现起止日期验证
+- [ ] 添加快捷日期选项（最近7天/30天/90天）
+- [ ] 实现日期范围数据查询
+**输入**: 日期选择需求
+**输出**: `frontend/src/components/DateRangePicker.vue`
+
+**FE-TREND-007**: 工作时间热力图
+- [ ] 创建7天×24小时矩阵热力图
+- [ ] 实现时段活跃度颜色映射
+- [ ] 添加最佳工作时段标记
+- [ ] 实现工作模式分析展示
+**输入**: 提交时间戳数据
+**输出**: `frontend/src/components/charts/WorkTimeHeatmap.vue`
+
+#### 3. AchievementsView完整开发模块 (0/6)
+
+**FE-ACHV-001**: 成就徽章组件
+- [ ] 设计5级徽章样式（铜/银/金/钻石/传奇）
+- [ ] 创建AchievementBadge组件
+- [ ] 实现徽章发光效果
+- [ ] 添加徽章悬停详情
+**输入**: AchievementsView.vue
+**输出**: `frontend/src/components/AchievementBadge.vue`
+
+**FE-ACHV-002**: 徽章解锁动画
+- [ ] 设计解锁爆裂光效动画
+- [ ] 实现GSAP/CSS动画
+- [ ] 添加音效触发（可选）
+- [ ] 创建解锁庆祝弹窗
+**输入**: 徽章解锁事件
+**输出**: 动画效果系统
+
+**FE-ACHV-003**: 成就展示网格
+- [ ] 设计成就分类（编码/学习/社交/特殊）
+- [ ] 创建成就卡片网格布局
+- [ ] 实现已解锁/未解锁状态区分
+- [ ] 添加进度条显示
+**输入**: 成就数据模型
+**输出**: 成就展示页面布局
+
+**FE-ACHV-004**: 目标设定表单
+- [ ] 设计目标类型（每日提交/代码量/技能学习）
+- [ ] 创建GoalForm组件
+- [ ] 实现表单验证
+- [ ] 添加目标提交API调用
+**输入**: 目标设定需求
+**输出**: `frontend/src/components/GoalForm.vue`
+
+**FE-ACHV-005**: 目标进度卡片
+- [ ] 创建GoalProgressCard组件
+- [ ] 实现环形/线性进度条
+- [ ] 添加剩余天数倒计时
+- [ ] 实现目标完成度可视化
+**输入**: 目标数据
+**输出**: `frontend/src/components/GoalProgressCard.vue`
+
+**FE-ACHV-006**: 目标完成庆祝动画
+- [ ] 设计完成庆祝效果（烟花/彩带）
+- [ ] 实现Canvas粒子动画
+- [ ] 添加成就分享卡片生成
+- [ ] 创建社交分享功能
+**输入**: 目标完成事件
+**输出**: 庆祝动画系统
+
+#### 4. 语言分析增强模块 (0/4)
+
+**FE-LANG-001**: 语言排行榜列表
+- [ ] 创建LanguageRankingList组件
+- [ ] 实现排名图标和进度条
+- [ ] 添加语言使用时长统计
+- [ ] 实现列表动画效果
+**输入**: LanguagePieChart数据
+**输出**: `frontend/src/components/LanguageRankingList.vue`
+
+**FE-LANG-002**: 技术栈成长时间轴
+- [ ] 创建TechStackTimeline组件
+- [ ] 实现垂直时间轴布局
+- [ ] 添加技能学习里程碑标记
+- [ ] 实现时间轴滚动动画
+**输入**: 技术栈历史数据
+**输出**: `frontend/src/components/TechStackTimeline.vue`
+
+**FE-LANG-003**: 技术栈云图
+- [ ] 集成词云库（ECharts wordcloud/D3-cloud）
+- [ ] 创建TechStackCloud组件
+- [ ] 实现语言权重映射
+- [ ] 添加交互式点击过滤
+**输入**: 语言使用频率数据
+**输出**: `frontend/src/components/TechStackCloud.vue`
+
+**FE-LANG-004**: 语言图标系统
+- [ ] 收集/设计30+编程语言图标SVG
+- [ ] 创建LanguageIcon组件
+- [ ] 实现图标发光效果
+- [ ] 集成到各语言展示组件
+**输入**: 编程语言标识
+**输出**: `frontend/src/components/icons/LanguageIcon.vue`
+
+#### 5. 智能洞察模块 (0/4)
+
+**FE-INSIGHT-001**: 每周洞察报告卡片
+- [ ] 创建WeeklyInsightCard组件
+- [ ] 实现数据摘要展示
+- [ ] 添加趋势对比图表
+- [ ] 实现报告下载功能
+**输入**: 周报数据
+**输出**: `frontend/src/components/WeeklyInsightCard.vue`
+
+**FE-INSIGHT-002**: 个性化建议提示组件
+- [ ] 创建SuggestionTip组件
+- [ ] 实现AI建议内容渲染
+- [ ] 添加建议分类标签
+- [ ] 实现建议采纳反馈
+**输入**: AI分析结果
+**输出**: `frontend/src/components/SuggestionTip.vue`
+
+**FE-INSIGHT-003**: 异常模式通知组件
+- [ ] 创建AnomalyAlert组件
+- [ ] 实现警告级别样式（低/中/高）
+- [ ] 添加异常详情查看
+- [ ] 实现通知消息推送
+**输入**: 异常检测数据
+**输出**: `frontend/src/components/AnomalyAlert.vue`
+
+**FE-INSIGHT-004**: 对比洞察显示组件
+- [ ] 创建ComparisonInsight组件
+- [ ] 实现时间段对比图表
+- [ ] 添加增长率/变化率指标
+- [ ] 实现数据导出功能
+**输入**: 对比数据
+**输出**: `frontend/src/components/ComparisonInsight.vue`
 
 ---
 
-### 集成和优化 (0/4)
+### 集成和优化模块 (0/4)
 
-#### INT-001: 响应式适配验证
-- [ ] 测试桌面端布局（>1200px）
-- [ ] 测试平板端布局（768px-1200px）
-- [ ] 测试移动端布局（<768px）
-- [ ] 优化触摸交互体验
-**输入**: ui-design/spec.md (响应式布局)  
+**FE-OPT-001**: 响应式适配验证
+- [ ] 测试桌面端（>1200px）所有页面
+- [ ] 测试平板端（768-1200px）布局
+- [ ] 测试移动端（<768px）交互
+- [ ] 优化触摸手势支持
+- [ ] 编写测试报告
+**输入**: 各页面组件
 **输出**: 响应式测试报告
 
-#### INT-002: 主题切换和个性化设置
-- [ ] 实现主题配置store
-- [ ] 创建主题设置面板
-- [ ] 实现霓虹主题色切换（5种配色）
-- [ ] 实现发光强度调节
-- [ ] 实现主题导出/导入功能
-**输入**: ui-design/spec.md (主题定制系统)  
-**输出**: `frontend/src/stores/theme.ts`
+**FE-OPT-002**: 主题切换系统
+- [ ] 完善theme.ts store
+- [ ] 创建ThemeSettingsPanel组件
+- [ ] 实现5种预设主题切换
+- [ ] 添加发光强度滑块
+- [ ] 实现主题导出/导入JSON
+**输入**: 主题配置需求
+**输出**: `frontend/src/components/ThemeSettingsPanel.vue`
 
-#### INT-003: 性能优化
-- [ ] 实现CSS transform GPU加速
-- [ ] 实现图标SVG优化
-- [ ] 实现图表懒加载和Canvas渲染
-- [ ] 实现低性能设备动画降级
-- [ ] 实现代码分割和懒加载
-**输入**: ui-design/spec.md (性能优化)  
-**输出**: 性能优化报告
+**FE-OPT-003**: 性能优化
+- [ ] 分析性能瓶颈（Chrome DevTools）
+- [ ] 实现CSS GPU加速
+- [ ] 优化SVG图标加载
+- [ ] 实现图表懒加载
+- [ ] 添加动画降级开关
+- [ ] 编写性能优化报告
+**输入**: 性能分析数据
+**输出**: 优化方案和报告
 
-#### INT-004: 无障碍支持
-- [ ] 验证文字对比度≥4.5:1
+**FE-OPT-004**: 无障碍支持
+- [ ] 验证WCAG 2.1 AA对比度标准
 - [ ] 实现高对比度模式
-- [ ] 实现键盘导航和焦点指示器
-- [ ] 添加ARIA标签
-**输入**: ui-design/spec.md (无障碍和可用性)  
+- [ ] 添加键盘导航支持
+- [ ] 添加ARIA标签和role
+- [ ] 测试屏幕阅读器兼容性
+- [ ] 编写无障碍测试报告
+**输入**: WCAG标准
 **输出**: 无障碍测试报告
 
 ---
@@ -418,10 +564,11 @@
 2. ✅ **图表可视化集成** - 提交趋势、语言分布、时段分析
 3. ✅ **科技风格优化** - 霓虹蓝配色、发光效果
 4. ✅ **环境配置指南** - Python 3.11方案文档
+5. ✅ **Python环境配置** - Python 3.11.7环境搭建完成
+6. ✅ **后端依赖安装** - 所有依赖包成功安装
 
 ### 立即执行（优先级P0）
-1. **BE-ENV**: 配置Python 3.11环境并启动后端服务
-2. **BE-DB**: 配置MySQL数据库连接
+1. **BE-DB**: 配置MySQL数据库连接
 3. **API-CONNECT**: 前端对接真实后端API
 
 ### 短期计划（优先级P1）
