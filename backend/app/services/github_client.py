@@ -4,8 +4,9 @@ GitHub API客户端
 """
 import httpx
 import logging
+import asyncio
 from typing import Optional, Dict, Any, List
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from app.core.config import settings
 
@@ -38,16 +39,24 @@ class GitHubClient:
     
     BASE_URL = "https://api.github.com"
     
-    def __init__(self, token: Optional[str] = None):
+    def __init__(self, token: Optional[str] = None, auto_retry: bool = True):
         """
         初始化GitHub客户端
         
         Args:
             token: GitHub Personal Access Token，如果不提供则从配置读取
+            auto_retry: 是否在遇到速率限制时自动重试
         """
         self.token = token or settings.GITHUB_TOKEN
         if not self.token:
             logger.warning("GitHub Token未配置，API请求将受限（60次/小时）")
+        
+        self.auto_retry = auto_retry
+        self.rate_limit_info = {
+            'remaining': None,
+            'limit': None,
+            'reset': None
+        }
         
         # 配置HTTP客户端
         self.headers = {
@@ -71,63 +80,85 @@ class GitHubClient:
         method: str,
         endpoint: str,
         params: Optional[Dict[str, Any]] = None,
-        json_data: Optional[Dict[str, Any]] = None
+        json_data: Optional[Dict[str, Any]] = None,
+        max_retries: int = 3
     ) -> Dict[str, Any]:
         """
-        发送HTTP请求到GitHub API
+        发送HTTP请求到GitHub API（支持自动重试）
         
         Args:
             method: HTTP方法（GET, POST等）
             endpoint: API端点（如 /user/repos）
             params: URL查询参数
             json_data: JSON请求体
+            max_retries: 最大重试次数
             
         Returns:
             响应JSON数据
             
         Raises:
-            RateLimitError: 速率限制超限
+            RateLimitError: 速率限制超限且未启用自动重试
             AuthenticationError: 认证失败
             GitHubAPIError: 其他API错误
         """
-        try:
-            response = await self.client.request(
-                method=method,
-                url=endpoint,
-                params=params,
-                json=json_data
-            )
-            
-            # 记录速率限制信息
-            self._log_rate_limit(response.headers)
-            
-            # 处理错误响应
-            if response.status_code == 401:
-                raise AuthenticationError("GitHub Token无效或已过期")
-            
-            if response.status_code == 403:
-                if "rate limit" in response.text.lower():
-                    raise RateLimitError("API速率限制已达上限")
-                raise GitHubAPIError(f"访问被拒绝: {response.text}")
-            
-            if response.status_code == 404:
-                raise GitHubAPIError(f"资源不存在: {endpoint}")
-            
-            if response.status_code >= 400:
-                raise GitHubAPIError(
-                    f"API请求失败 (状态码: {response.status_code}): {response.text}"
+        retries = 0
+        
+        while retries <= max_retries:
+            try:
+                # 检查是否需要等待速率限制重置
+                if self.auto_retry:
+                    await self._check_rate_limit()
+                
+                response = await self.client.request(
+                    method=method,
+                    url=endpoint,
+                    params=params,
+                    json=json_data
                 )
-            
-            response.raise_for_status()
-            return response.json()
-            
-        except httpx.HTTPError as e:
-            logger.error(f"HTTP请求错误: {e}")
-            raise GitHubAPIError(f"网络请求失败: {str(e)}")
+                
+                # 更新速率限制信息
+                self._update_rate_limit(response.headers)
+                
+                # 处理错误响应
+                if response.status_code == 401:
+                    raise AuthenticationError("GitHub Token无效或已过期")
+                
+                if response.status_code == 403:
+                    if "rate limit" in response.text.lower():
+                        if self.auto_retry and retries < max_retries:
+                            wait_time = self._calculate_wait_time()
+                            logger.warning(f"遇到速率限制，等待 {wait_time} 秒后重试...")
+                            await asyncio.sleep(wait_time)
+                            retries += 1
+                            continue
+                        raise RateLimitError("API速率限制已达上限")
+                    raise GitHubAPIError(f"访问被拒绝: {response.text}")
+                
+                if response.status_code == 404:
+                    raise GitHubAPIError(f"资源不存在: {endpoint}")
+                
+                if response.status_code >= 400:
+                    raise GitHubAPIError(
+                        f"API请求失败 (状态码: {response.status_code}): {response.text}"
+                    )
+                
+                response.raise_for_status()
+                return response.json()
+                
+            except httpx.HTTPError as e:
+                if retries < max_retries:
+                    logger.warning(f"HTTP请求错误，重试中... ({retries + 1}/{max_retries})")
+                    retries += 1
+                    await asyncio.sleep(2 ** retries)  # 指数退避
+                    continue
+                logger.error(f"HTTP请求错误: {e}")
+                raise GitHubAPIError(f"网络请求失败: {str(e)}")
+        
+        raise GitHubAPIError(f"请求失败，已达最大重试次数 ({max_retries})")
     
-    def _log_rate_limit(self, headers: Dict[str, str]) -> None:
+    def _update_rate_limit(self, headers: Dict[str, str]) -> None:
         """
-        记录API速率限制信息
+        更新速率限制信息
         
         Args:
             headers: HTTP响应头
@@ -137,15 +168,61 @@ class GitHubClient:
         reset_timestamp = headers.get("X-RateLimit-Reset")
         
         if remaining and limit:
-            logger.debug(f"API配额: {remaining}/{limit} 剩余")
+            self.rate_limit_info['remaining'] = int(remaining)
+            self.rate_limit_info['limit'] = int(limit)
             
             if reset_timestamp:
+                self.rate_limit_info['reset'] = int(reset_timestamp)
                 reset_time = datetime.fromtimestamp(int(reset_timestamp))
                 logger.debug(f"配额重置时间: {reset_time}")
+            
+            logger.debug(f"API配额: {remaining}/{limit} 剩余")
             
             # 警告：配额即将用尽
             if int(remaining) < 100:
                 logger.warning(f"⚠️  API配额不足: {remaining}/{limit}")
+    
+    async def _check_rate_limit(self) -> None:
+        """
+        检查速率限制，如果配额不足则等待
+        """
+        if self.rate_limit_info['remaining'] is not None:
+            if self.rate_limit_info['remaining'] < 10:  # 剩余配额低于10
+                wait_time = self._calculate_wait_time()
+                if wait_time > 0:
+                    logger.warning(f"API配额不足，等待 {wait_time} 秒...")
+                    await asyncio.sleep(wait_time)
+    
+    def _calculate_wait_time(self) -> int:
+        """
+        计算需要等待的时间（秒）
+        
+        Returns:
+            等待时间（秒）
+        """
+        if self.rate_limit_info['reset'] is None:
+            return 60  # 默认等待60秒
+        
+        now = datetime.now().timestamp()
+        reset_time = self.rate_limit_info['reset']
+        
+        wait_time = max(0, int(reset_time - now) + 5)  # 额外等待5秒确保配额已重置
+        return wait_time
+    
+    def get_rate_limit_status(self) -> Dict[str, Any]:
+        """
+        获取当前速率限制状态（本地缓存）
+        
+        Returns:
+            速率限制状态字典
+        """
+        status = self.rate_limit_info.copy()
+        
+        if status['reset']:
+            status['reset_time'] = datetime.fromtimestamp(status['reset']).isoformat()
+            status['time_until_reset'] = max(0, int(status['reset'] - datetime.now().timestamp()))
+        
+        return status
     
     async def get_rate_limit(self) -> Dict[str, Any]:
         """
