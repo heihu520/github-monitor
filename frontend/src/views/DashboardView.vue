@@ -4,11 +4,30 @@
     
     <div class="container">
       <div class="dashboard-content">
-        <!-- 页面标题 -->
-        <div class="page-header">
-          <h1 class="page-title">代码追踪仪表盘</h1>
-          <p class="page-subtitle">实时监控你的编码活动和生产力指标</p>
+        <!-- 加载状态 -->
+        <div v-if="isLoading" class="loading-container">
+          <LoadingSpinner size="large" text="正在加载数据..." />
         </div>
+
+        <!-- 错误状态 -->
+        <ErrorAlert
+          v-else-if="error"
+          :message="error"
+          @retry="handleRetry"
+          @close="handleCloseError"
+        />
+
+        <!-- 数据内容 -->
+        <div v-else>
+          <!-- 页面标题 -->
+          <div class="page-header">
+            <h1 class="page-title">代码追踪仪表盘</h1>
+            <p class="page-subtitle">实时监控你的编码活动和生产力指标</p>
+            <button class="btn-refresh" @click="handleRefresh" :disabled="isRefreshing">
+              <span class="refresh-icon">🔄</span>
+              {{ isRefreshing ? '刷新中...' : '刷新数据' }}
+            </button>
+          </div>
 
         <!-- 里程碑成就徽章区域 -->
         <TechCard
@@ -110,13 +129,14 @@
             </div>
           </div>
         </TechCard>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, computed } from 'vue'
+import { onMounted, computed, ref } from 'vue'
 import AppNav from '@/components/AppNav.vue'
 import TechCard from '@/components/TechCard.vue'
 import StatCard from '@/components/StatCard.vue'
@@ -125,10 +145,17 @@ import LanguagePieChart from '@/components/LanguagePieChart.vue'
 import HourlyActivityChart from '@/components/HourlyActivityChart.vue'
 import MilestoneBadge from '@/components/MilestoneBadge.vue'
 import HeatmapChart from '@/components/charts/HeatmapChart.vue'
+import LoadingSpinner from '@/components/LoadingSpinner.vue'
+import ErrorAlert from '@/components/ErrorAlert.vue'
 import { useStatsStore } from '@/stores'
 
 // 使用统计数据 store
 const statsStore = useStatsStore()
+
+// 加载和错误状态
+const isLoading = computed(() => statsStore.isLoading)
+const error = computed(() => statsStore.error)
+const isRefreshing = ref(false)
 
 // 从 store 获取数据
 const stats = computed(() => statsStore.dashboardStats)
@@ -161,10 +188,31 @@ const displayMilestones = computed(() => {
   return [...unlocked, ...locked]
 })
 
-// 组件挂载时加载数据
+// 组件挂载时加载数据（使用真实API）
 onMounted(async () => {
-  await statsStore.refreshAllData()
+  // 使用user_id=7（数据库中的实际用户ID）
+  await statsStore.fetchDashboardData(7)
 })
+
+// 刷新数据
+async function handleRefresh() {
+  isRefreshing.value = true
+  try {
+    await statsStore.refreshAllData(7)
+  } finally {
+    isRefreshing.value = false
+  }
+}
+
+// 重试加载
+async function handleRetry() {
+  await statsStore.fetchDashboardData(7)
+}
+
+// 关闭错误提示
+function handleCloseError() {
+  statsStore.error = null
+}
 </script>
 
 <style scoped>
@@ -197,10 +245,19 @@ onMounted(async () => {
   overflow: visible;
 }
 
+/* 加载和错误状态 */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
 /* 页面标题 */
 .page-header {
   margin-bottom: var(--spacing-2xl);
   text-align: center;
+  position: relative;
 }
 
 .page-title {
@@ -212,6 +269,50 @@ onMounted(async () => {
   color: var(--text-secondary);
   font-size: 1.125rem;
   animation: fadeInUp 0.6s ease-out 0.1s both;
+  margin-bottom: var(--spacing-md);
+}
+
+/* 刷新按钮 */
+.btn-refresh {
+  margin-top: var(--spacing-md);
+  padding: 0.5rem 1.5rem;
+  background: rgba(0, 212, 255, 0.1);
+  border: 1px solid var(--neon-blue, #00d4ff);
+  border-radius: 6px;
+  color: var(--neon-blue, #00d4ff);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-refresh:hover:not(:disabled) {
+  background: var(--neon-blue, #00d4ff);
+  color: #000;
+  box-shadow: 0 0 20px var(--neon-blue, #00d4ff);
+  transform: translateY(-2px);
+}
+
+.btn-refresh:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.refresh-icon {
+  display: inline-block;
+  animation: rotate 1s linear infinite paused;
+}
+
+.btn-refresh:disabled .refresh-icon {
+  animation-play-state: running;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* 统计卡片网格 */
@@ -386,6 +487,11 @@ onMounted(async () => {
   .milestones-grid {
     grid-template-columns: repeat(auto-fit, minmax(64px, 64px));
     gap: var(--spacing-md);
+  }
+
+  .btn-refresh {
+    font-size: 12px;
+    padding: 0.4rem 1rem;
   }
 }
 

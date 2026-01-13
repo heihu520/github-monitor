@@ -838,14 +838,165 @@
 
 ---
 
+## 📋 变更提案四：frontend-real-api-integration（前端真实API数据集成）
+
+### API服务层 (0/4)
+
+**FE-API-001**: 创建基础API配置
+- [ ] 创建axios实例和基础配置
+- [ ] 配置API_BASE_URL (http://localhost:8000)
+- [ ] 实现请求/响应拦截器
+- [ ] 配置超时和错误处理
+**优先级**: 高
+**预计时间**: 30分钟
+
+**FE-API-002**: 创建API类型定义
+- [ ] 定义DashboardStats接口
+- [ ] 定义MilestoneAchievement接口
+- [ ] 定义TrendPoint接口
+- [ ] 定义HeatmapData接口
+- [ ] 定义DashboardOverview接口
+- [ ] 定义ApiError接口
+**优先级**: 高
+**预计时间**: 45分钟
+
+**FE-API-003**: 实现仪表板API服务
+- [ ] 实现getDashboardOverview()
+- [ ] 实现getDashboardStats()
+- [ ] 实现getMilestones()
+- [ ] 实现getTrendData()
+- [ ] 实现getHeatmapData()
+**优先级**: 高
+**预计时间**: 1小时
+
+**FE-API-004**: 实现调度器API服务
+- [ ] 实现getSchedulerStatus()
+- [ ] 实现listJobs()
+- [ ] 实现createJob()
+- [ ] 实现deleteJob()
+- [ ] 实现triggerJob()
+**优先级**: 中
+**预计时间**: 45分钟
+
+### Pinia Store更新 (0/3)
+
+**FE-STORE-001**: 更新stats store集成API
+- [ ] 添加loading/error状态
+- [ ] 实现fetchDashboardData action
+- [ ] 实现refreshData action
+- [ ] 移除所有硬编码模拟数据
+- [ ] 使用dashboardApi调用
+**优先级**: 高
+**预计时间**: 1.5小时
+
+**FE-STORE-002**: 更新user store集成API
+- [ ] 从后端API获取用户信息
+- [ ] 添加setUser action
+- [ ] 添加loading/error状态
+**优先级**: 中
+**预计时间**: 30分钟
+
+**FE-STORE-003**: 创建scheduler store
+- [ ] 创建jobs状态
+- [ ] 实现fetchJobs action
+- [ ] 实现createJob action
+- [ ] 实现deleteJob action
+- [ ] 实现triggerJob action
+**优先级**: 低
+**预计时间**: 45分钟
+
+### UI组件集成 (0/3)
+
+**FE-UI-001**: 添加加载状态组件
+- [ ] 创建LoadingSpinner组件
+- [ ] 实现旋转动画
+- [ ] 支持自定义大小
+- [ ] 科技风样式
+**优先级**: 高
+**预计时间**: 30分钟
+
+**FE-UI-002**: 添加错误提示组件
+- [ ] 创建ErrorAlert组件
+- [ ] 显示错误消息
+- [ ] 实现重试按钮
+- [ ] 实现关闭按钮
+**优先级**: 高
+**预计时间**: 30分钟
+
+**FE-UI-003**: 更新DashboardView集成API
+- [ ] onMounted调用fetchDashboardData
+- [ ] 显示loading状态
+- [ ] 显示error状态
+- [ ] 添加刷新按钮
+- [ ] 处理空数据状态
+**优先级**: 高
+**预计时间**: 1小时
+
+### 测试和优化 (0/3)
+
+**FE-TEST-001**: API集成测试
+- [ ] 测试正常流程
+- [ ] 测试错误处理
+- [ ] 测试网络异常
+- [ ] 测试超时处理
+- [ ] 验证数据格式
+**优先级**: 高
+**预计时间**: 1小时
+
+**FE-TEST-002**: CORS配置验证
+- [ ] 验证OPTIONS预检请求
+- [ ] 验证实际数据请求
+- [ ] 检查响应headers
+- [ ] 测试不同端口访问
+**优先级**: 高
+**预计时间**: 30分钟
+
+**FE-OPT-001**: 实现数据缓存
+- [ ] localStorage缓存
+- [ ] 缓存过期策略
+- [ ] 缓存更新逻辑
+- [ ] 强制刷新选项
+**优先级**: 中
+**预计时间**: 1小时
+
+### 任务优先级排序
+
+**Phase 1 - 基础设施** (4个任务，2.5小时)
+1. FE-API-001: 创建基础API配置
+2. FE-API-002: 创建API类型定义
+3. FE-API-003: 实现仪表板API服务
+4. FE-UI-001: 添加加载状态组件
+
+**Phase 2 - Store集成** (2个任务，2小时)
+5. FE-STORE-001: 更新stats store集成API
+6. FE-UI-002: 添加错误提示组件
+
+**Phase 3 - UI更新** (1个任务，1小时)
+7. FE-UI-003: 更新DashboardView集成API
+
+**Phase 4 - 测试优化** (3个任务，2.5小时)
+8. FE-TEST-001: API集成测试
+9. FE-TEST-002: CORS配置验证
+10. FE-OPT-001: 实现数据缓存
+
+**Phase 5 - 扩展功能** (3个任务，2小时)
+11. FE-STORE-002: 更新user store集成API
+12. FE-API-004: 实现调度器API服务
+13. FE-STORE-003: 创建scheduler store
+
+**总计**: 13个任务，预计10小时
+
+---
+
 ### 立即执行（优先级P0）
 1. ✅ ~~BE-DB配置~~ 已完成
 2. ✅ ~~BE-API-001: GitHub数据抓取服务~~ 已完成
 3. ✅ ~~BE-API-002: 数据持久化服务~~ 已完成
 4. ✅ ~~BE-API-003: 仪表板API真实数据集成~~ 已完成
 5. ✅ ~~BE-API-004: 后台定时任务~~ 已完成
-6. **BE-API-005**: FastAPI应用启动测试
-7. **FE-BE-SYNC Phase 1**: 前后端同步核心功能
+6. ✅ ~~BE-API-005: FastAPI应用启动测试~~ 已完成
+7. **FE-REAL-API Phase 1-3**: 前端真实API集成核心功能
+8. **FE-BE-SYNC Phase 1**: 前后端同步核心功能
 
 ### 短期计划（优先级P1）
 4. **FE-HEATMAP**: 实现GitHub风格编码活跃度热力图

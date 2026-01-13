@@ -1,8 +1,14 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { dashboardApi } from '@/services/dashboard'
+import type {
+  DashboardOverview,
+  DashboardStats as ApiDashboardStats,
+  MilestoneAchievement as ApiMilestone
+} from '@/services/types'
 
 /**
- * 统计数据类型定义
+ * 统计数据类型定义（本地使用，兼容旧格式）
  */
 export interface DashboardStats {
   todayCommits: number
@@ -53,6 +59,22 @@ export interface Milestone {
   category: 'coding' | 'streak' | 'language' | 'special'
 }
 
+// API数据格式转换辅助函数
+function convertApiMilestone(apiMilestone: ApiMilestone): Milestone {
+  return {
+    id: apiMilestone.id,
+    title: apiMilestone.name,
+    description: apiMilestone.description,
+    icon: apiMilestone.icon,
+    level: apiMilestone.level,
+    unlocked: apiMilestone.unlocked,
+    unlockedAt: apiMilestone.unlock_date ? new Date(apiMilestone.unlock_date) : undefined,
+    progress: apiMilestone.current,
+    target: apiMilestone.target,
+    category: 'coding' // 默认分类，后端可扩展
+  }
+}
+
 export interface HeatmapData {
   date: string // YYYY-MM-DD格式
   commits: number
@@ -91,8 +113,9 @@ export const useStatsStore = defineStore('stats', () => {
   // 年度活跃度热力图数据
   const heatmapData = ref<HeatmapData[]>([])
 
-  // 加载状态
+  // 加载和错误状态
   const isLoading = ref<boolean>(false)
+  const error = ref<string | null>(null)
   const lastUpdated = ref<Date | null>(null)
 
   // 计算属性：今日趋势（与昨日对比）
@@ -161,28 +184,96 @@ export const useStatsStore = defineStore('stats', () => {
   }
 
   /**
-   * 从API获取统计数据
+   * 从API获取仪表板总览数据（真实API）
    */
-  async function fetchDashboardStats() {
+  async function fetchDashboardData(userId: number = 1) {
     isLoading.value = true
+    error.value = null
+    
     try {
-      // TODO: 实际API调用
-      // const response = await api.getDashboardStats()
-      // updateDashboardStats(response.data)
+      const overview = await dashboardApi.getOverview(userId)
       
-      // 暂时使用模拟数据
+      // 转换API数据格式到本地格式
       updateDashboardStats({
-        todayCommits: 8,
-        weekCommits: 42,
-        monthCommits: 156,
-        codeLines: 1234,
-        streakDays: 42,
-        workHours: 4.5,
-        activeLanguage: 'TypeScript',
-        totalRepositories: 5
+        todayCommits: overview.stats.today_commits,
+        weekCommits: overview.stats.week_commits,
+        monthCommits: overview.stats.month_commits,
+        codeLines: overview.stats.code_lines,
+        streakDays: overview.stats.streak_days,
+        workHours: overview.stats.work_hours,
+        activeLanguage: overview.stats.active_language,
+        totalRepositories: overview.stats.total_repositories
       })
-    } catch (error) {
-      console.error('Failed to fetch dashboard stats:', error)
+      
+      // 更新里程碑数据（检查是否存在）
+      if (overview.milestones && Array.isArray(overview.milestones)) {
+        milestones.value = overview.milestones.map(convertApiMilestone)
+      }
+      
+      // 更新趋势数据（检查是否存在）
+      if (overview.trend_data && Array.isArray(overview.trend_data)) {
+        trendData.value = overview.trend_data.map(point => ({
+          date: point.date,
+          commits: point.commits,
+          additions: point.additions,
+          deletions: point.deletions
+        }))
+      }
+      
+      // 更新热力图数据（检查是否存在）
+      if (overview.heatmap_data && Array.isArray(overview.heatmap_data)) {
+        heatmapData.value = overview.heatmap_data.map(point => ({
+          date: point.date,
+          commits: point.count,
+          level: point.level
+        }))
+      }
+      
+      // 更新语言统计（检查是否存在）
+      if (overview.language_stats && Array.isArray(overview.language_stats)) {
+        languageStats.value = overview.language_stats.map(lang => ({
+          name: lang.language,
+          percentage: lang.percentage,
+          commits: 0, // 后端可扩展
+          lines: lang.lines,
+          color: lang.color || '#3178c6'
+        }))
+      }
+      
+      lastUpdated.value = new Date()
+    } catch (err: any) {
+      error.value = err.message || '获取数据失败'
+      console.error('Failed to fetch dashboard data:', err)
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
+   * 从API获取统计数据（单独获取）
+   */
+  async function fetchDashboardStats(userId: number = 1) {
+    isLoading.value = true
+    error.value = null
+    
+    try {
+      const stats = await dashboardApi.getStats(userId)
+      
+      updateDashboardStats({
+        todayCommits: stats.today_commits,
+        weekCommits: stats.week_commits,
+        monthCommits: stats.month_commits,
+        codeLines: stats.code_lines,
+        streakDays: stats.streak_days,
+        workHours: stats.work_hours,
+        activeLanguage: stats.active_language,
+        totalRepositories: stats.total_repositories
+      })
+      
+      lastUpdated.value = new Date()
+    } catch (err: any) {
+      error.value = err.message || '获取统计数据失败'
+      console.error('Failed to fetch dashboard stats:', err)
     } finally {
       isLoading.value = false
     }
@@ -286,15 +377,15 @@ export const useStatsStore = defineStore('stats', () => {
   }
 
   /**
-   * 从API获取成就里程碑数据
+   * 从API获取成就里程碑数据（真实API）
    */
-  async function fetchMilestones() {
+  async function fetchMilestones(userId: number = 1) {
     try {
-      // TODO: 实际API调用
-      // const response = await api.getMilestones()
-      // milestones.value = response.data
-      
-      // 暂时使用模拟数据
+      const apiMilestones = await dashboardApi.getMilestones(userId)
+      milestones.value = apiMilestones.map(convertApiMilestone)
+    } catch (err: any) {
+      console.error('Failed to fetch milestones:', err)
+      // 失败时使用模拟数据
       milestones.value = [
         {
           id: 'first-commit',
@@ -359,8 +450,6 @@ export const useStatsStore = defineStore('stats', () => {
           category: 'special'
         }
       ]
-    } catch (error) {
-      console.error('Failed to fetch milestones:', error)
     }
   }
 
@@ -413,17 +502,11 @@ export const useStatsStore = defineStore('stats', () => {
   }
 
   /**
-   * 刷新所有数据
+   * 刷新所有数据（使用真实API）
    */
-  async function refreshAllData() {
-    await Promise.all([
-      fetchDashboardStats(),
-      fetchRecentActivities(),
-      fetchLanguageStats(),
-      fetchTrendData(),
-      fetchMilestones(),
-      fetchHeatmapData()
-    ])
+  async function refreshAllData(userId: number = 1) {
+    // 使用总览API一次性获取所有数据
+    await fetchDashboardData(userId)
   }
 
   /**
@@ -457,6 +540,7 @@ export const useStatsStore = defineStore('stats', () => {
     milestones,
     heatmapData,
     isLoading,
+    error,
     lastUpdated,
     
     // Computed
@@ -470,13 +554,14 @@ export const useStatsStore = defineStore('stats', () => {
     setRecentActivities,
     updateLanguageStats,
     updateTrendData,
-    fetchDashboardStats,
+    fetchDashboardData,      // 新增：获取总览数据
+    fetchDashboardStats,     // 更新：使用真实API
     fetchRecentActivities,
     fetchLanguageStats,
     fetchTrendData,
-    fetchMilestones,
+    fetchMilestones,        // 更新：使用真实API
     fetchHeatmapData,
-    refreshAllData,
+    refreshAllData,         // 更新：使用真实API
     reset
   }
 })
