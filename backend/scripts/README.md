@@ -1,120 +1,239 @@
-# 数据库脚本使用指南
+# 数据管理脚本
 
-## 文件说明
+本目录包含数据库管理和数据同步相关的脚本工具。
 
-- `init_database.sql` - MySQL数据库初始化SQL脚本
-- `run_init_db.bat` - Windows批处理执行脚本
+## 脚本列表
 
-## 使用方法
+### 1. clean_database.py - 数据库清理脚本
 
-### 方法一：使用批处理脚本（推荐）
+清空所有数据表，保留表结构。用于重新同步数据前的清理工作。
 
-1. 确保MySQL已安装并添加到PATH环境变量
-2. 双击运行 `run_init_db.bat`
-3. 按提示操作
-
-### 方法二：手动执行SQL
-
-1. 打开MySQL命令行客户端或使用MySQL Workbench
-2. 确保连接到MySQL服务器（用户: hadoop, 密码: hadoop）
-3. 执行以下命令：
+**使用方法：**
 
 ```bash
-# Windows CMD
-mysql -u hadoop -phadoop github_monitor < init_database.sql
+# 交互式清理（需要确认）
+cd backend/scripts
+python clean_database.py
 
-# PowerShell
-Get-Content init_database.sql | mysql -u hadoop -phadoop github_monitor
-
-# MySQL Workbench
-# 打开 init_database.sql 文件并执行
+# 自动确认清理（用于自动化脚本）
+AUTO_CONFIRM=yes python clean_database.py
 ```
 
-### 方法三：使用Python脚本（即将实现）
+**功能：**
+- 按照外键依赖顺序清空所有表
+- 显示每个表删除的记录数
+- 自动验证清理结果
+- 保留表结构不变
+
+**安全特性：**
+- 默认需要用户确认
+- 支持环境变量自动确认
+- 事务保护，失败自动回滚
+
+---
+
+### 2. sync_github_data.py - GitHub数据同步脚本
+
+从GitHub API同步用户、仓库和提交数据到数据库。支持完整同步和增量同步。
+
+**使用方法：**
 
 ```bash
+cd backend/scripts
+
+# 增量同步（最近30天数据，每个仓库最多100个提交）
+python sync_github_data.py <username>
+
+# 完整同步（最近1年数据，所有提交）
+python sync_github_data.py <username> --full
+
+# 清空数据库后完整同步
+python sync_github_data.py <username> --full --clean
+```
+
+**参数说明：**
+- `username`: GitHub用户名（必需）
+- `--full`: 完整同步模式
+- `--clean`: 同步前清空数据库
+
+**同步模式对比：**
+
+| 模式 | 同步范围 | 提交限制 | 适用场景 |
+|------|---------|---------|---------|
+| 增量同步 | 最近30天 | 每仓库100个 | 日常更新 |
+| 完整同步 | 最近1年 | 无限制 | 首次同步/重建数据 |
+
+**同步流程：**
+1. 同步用户基本信息
+2. 同步仓库列表
+3. 同步提交记录（按仓库）
+4. 更新用户统计数据
+
+**示例输出：**
+
+```
+============================================================
+GitHub数据同步 - testuser
+模式: 增量同步
+============================================================
+
+[1/3] 同步用户信息...
+✅ 用户: testuser
+   - 仓库数: 5
+   - 提交数: 156
+
+[2/3] 同步仓库列表...
+✅ 同步了 5 个仓库
+
+[3/3] 同步提交记录...
+   模式: 增量同步（最近30天）
+
+   [1/5] testuser/repo1
+       ✓ 同步 25 个提交
+   [2/5] testuser/repo2
+       ○ 无新提交
+   ...
+
+[4/4] 更新用户统计...
+✅ 统计数据已更新
+
+============================================================
+✅ 同步完成
+------------------------------------------------------------
+用户: testuser
+仓库: 5 个
+提交: 78 个
+耗时: 45.23 秒
+============================================================
+```
+
+---
+
+## 使用场景
+
+### 场景1：首次部署
+
+```bash
+# 1. 初始化数据库表（如果还没有）
 cd backend
-python scripts/init_db.py
+python init_db.py
+
+# 2. 完整同步GitHub数据
+cd scripts
+python sync_github_data.py <your-username> --full
 ```
 
-## 数据库结构
+### 场景2：日常更新
 
-### 表清单
-
-1. **users** - 用户信息表
-2. **repositories** - 仓库信息表
-3. **daily_stats** - 每日统计数据表
-4. **commit_details** - 提交详细信息表
-5. **language_stats** - 编程语言统计表
-6. **milestone_achievements** - 里程碑成就表
-7. **coding_goals** - 编码目标表
-
-### 表关系
-
+```bash
+# 增量同步最近变更
+cd backend/scripts
+python sync_github_data.py <your-username>
 ```
-users (1) ----< (N) repositories
-users (1) ----< (N) daily_stats
-users (1) ----< (N) commit_details
-users (1) ----< (N) language_stats
-users (1) ----< (N) milestone_achievements
-users (1) ----< (N) coding_goals
 
-repositories (1) ----< (N) commit_details
+### 场景3：重建数据
+
+```bash
+# 清空后重新完整同步
+cd backend/scripts
+python sync_github_data.py <your-username> --full --clean
 ```
+
+### 场景4：仅清空数据
+
+```bash
+# 只清空数据，不同步
+cd backend/scripts
+python clean_database.py
+```
+
+---
 
 ## 注意事项
 
-⚠️ **警告**: 此脚本会删除所有现有表并重建，请谨慎使用！
+1. **GitHub Token**：确保 `.env` 文件中配置了有效的 `GITHUB_TOKEN`
 
-- 首次部署：直接运行即可
-- 已有数据：请先备份数据库
-- 生产环境：不建议使用此脚本，应使用迁移工具
+2. **速率限制**：
+   - GitHub API 限制：5000次/小时（认证）
+   - 完整同步可能消耗大量配额
+   - 脚本会自动处理速率限制
+
+3. **网络要求**：
+   - 需要稳定的网络连接
+   - 可能需要代理访问GitHub API
+   - 同步大量数据时间较长
+
+4. **数据库连接**：
+   - 确保MySQL服务运行
+   - 检查数据库连接配置
+   - 足够的磁盘空间
+
+5. **权限要求**：
+   - 数据库用户需要 TRUNCATE 权限
+   - GitHub Token 需要 repo 读取权限
+
+---
 
 ## 故障排查
 
-### 问题1: 'mysql' 不是内部或外部命令
+### 问题1：连接数据库失败
 
-**原因**: MySQL未添加到PATH环境变量
+```bash
+# 检查数据库服务
+mysql -u hadoop -p
 
-**解决方案**:
-1. 找到MySQL安装目录（如 `C:\Program Files\MySQL\MySQL Server 8.0\bin`）
-2. 将该路径添加到系统PATH环境变量
-3. 重启命令行窗口
-
-### 问题2: Access denied for user 'hadoop'
-
-**原因**: 用户名或密码错误，或用户权限不足
-
-**解决方案**:
-```sql
--- 以root用户登录MySQL
-CREATE USER IF NOT EXISTS 'hadoop'@'localhost' IDENTIFIED BY 'hadoop';
-GRANT ALL PRIVILEGES ON github_monitor.* TO 'hadoop'@'localhost';
-FLUSH PRIVILEGES;
+# 检查配置文件
+cat backend/.env | grep DATABASE
 ```
 
-### 问题3: Unknown database 'github_monitor'
+### 问题2：GitHub API 速率限制
 
-**原因**: 数据库不存在
-
-**解决方案**:
-```sql
--- 以root用户登录MySQL
-CREATE DATABASE IF NOT EXISTS github_monitor 
-  CHARACTER SET utf8mb4 
-  COLLATE utf8mb4_unicode_ci;
+```bash
+# 等待限制重置（通常1小时）
+# 或使用 --full 参数降低请求频率
 ```
 
-## 下一步
+### 问题3：Unicode编码错误
 
-数据库初始化完成后，请执行以下操作：
+脚本已自动处理Windows终端编码问题。如果仍有问题：
 
-1. 验证表结构：
-```sql
-USE github_monitor;
-SHOW TABLES;
-DESCRIBE users;
+```bash
+# Windows: 设置终端编码
+chcp 65001
+
+# 或使用环境变量
+set PYTHONIOENCODING=utf-8
 ```
 
-2. 配置后端环境变量（backend/.env）
-3. 运行后端应用测试数据库连接
+---
+
+## 开发调试
+
+### 启用调试日志
+
+修改 `backend/app/core/config.py`：
+
+```python
+DEBUG = True  # 将显示所有SQL语句
+```
+
+### 手动测试单个组件
+
+```python
+# 测试GitHub客户端
+python backend/test_github_client.py
+
+# 测试数据同步服务
+python backend/test_data_sync.py
+
+# 测试仪表板服务
+python backend/test_dashboard_service.py
+```
+
+---
+
+## 相关文档
+
+- [项目架构文档](../README.md)
+- [数据库设计](../docs/database_schema.md)
+- [API接口文档](../docs/api_reference.md)
