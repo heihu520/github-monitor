@@ -168,6 +168,52 @@ class GitHubClient:
         """
         return await self._request("GET", f"/users/{username}")
     
+    async def get_user_repos(
+        self,
+        username: str,
+        type: str = "all",
+        sort: str = "updated",
+        per_page: int = 100
+    ) -> List[Dict[str, Any]]:
+        """
+        获取用户的所有仓库列表
+        
+        Args:
+            username: GitHub用户名
+            type: 仓库类型 (all, owner, member) 默认all
+            sort: 排序方式 (created, updated, pushed, full_name) 默认updated
+            per_page: 每页数量，最大100
+            
+        Returns:
+            仓库列表
+        """
+        repos = []
+        page = 1
+        
+        while True:
+            params = {
+                "type": type,
+                "sort": sort,
+                "per_page": per_page,
+                "page": page
+            }
+            
+            batch = await self._request("GET", f"/users/{username}/repos", params=params)
+            
+            if not batch:
+                break
+            
+            repos.extend(batch)
+            
+            # 如果返回数量小于per_page，说明已经是最后一页
+            if len(batch) < per_page:
+                break
+            
+            page += 1
+        
+        logger.info(f"获取到 {len(repos)} 个仓库 (用户: {username})")
+        return repos
+    
     async def close(self):
         """关闭HTTP客户端连接"""
         await self.client.aclose()
