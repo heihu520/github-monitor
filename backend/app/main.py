@@ -9,6 +9,7 @@ from contextlib import asynccontextmanager
 from app.api.v1 import api_router
 from app.core.config import settings
 from app.core.database import init_db, close_db, check_db_health
+from app.services.scheduler_service import scheduler_service
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -16,13 +17,21 @@ async def lifespan(app: FastAPI):
     # 启动时
     print("正在初始化数据库连接...")
     # await init_db()  # 注释掉自动创建表，使用SQL脚本初始化
+    
+    print("正在启动定时任务调度器...")
+    scheduler_service.start()
+    
     print("应用启动完成")
     
     yield
     
     # 关闭时
+    print("正在关闭定时任务调度器...")
+    scheduler_service.shutdown()
+    
     print("正在关闭数据库连接...")
     await close_db()
+    
     print("应用已关闭")
 
 
@@ -63,11 +72,19 @@ async def health_check():
     # 检查数据库连接
     db_status = "ok" if await check_db_health() else "error"
     
+    # 检查调度器状态
+    scheduler_status = "ok" if scheduler_service.scheduler.running else "stopped"
+    
     return {
-        "status": "healthy" if db_status == "ok" else "degraded",
+        "status": "healthy" if db_status == "ok" and scheduler_status == "ok" else "degraded",
         "api_version": "v1",
         "services": {
             "database": db_status,
+            "scheduler": scheduler_status,
             "cache": "not_configured"  # Redis待集成
+        },
+        "scheduler": {
+            "running": scheduler_service.scheduler.running,
+            "job_count": len(scheduler_service.scheduler.get_jobs())
         }
     }
