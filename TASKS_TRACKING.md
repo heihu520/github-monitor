@@ -133,7 +133,20 @@
 
 ### 后端数据服务 (0/9) - 当前使用模拟数据
 
-#### BE-001: 个人仪表板数据聚合API ⏳（代码完成，待环境配置）
+#### BE-DB: 数据库初始化 ✅（已完成）
+- [x] BE-DB-001: 创建数据库初始化SQL脚本
+  - 创建8个核心数据表（users, repositories, daily_stats, commit_details, language_stats, milestone_achievements, coding_goals）
+  - 定义表关系和索引
+  - 添加测试数据
+- [ ] BE-DB-002: 执行数据库初始化
+  - 需要手动执行 `backend/scripts/run_init_db.bat`
+  - 或使用MySQL客户端执行 `init_database.sql`
+**交付物**:
+- `backend/scripts/init_database.sql` - 完整的数据库初始化脚本
+- `backend/scripts/run_init_db.bat` - Windows批处理执行脚本
+- `backend/scripts/README.md` - 详细使用说明文档
+
+#### BE-001: 个人仪表板数据聚合API ⏳（代码完成，待数据库配置）
 - [x] 实现今日/本周/本月提交统计接口
 - [x] 实现代码行数统计（增加/删除）
 - [x] 实现连续编码天数计算
