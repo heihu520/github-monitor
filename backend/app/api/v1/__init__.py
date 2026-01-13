@@ -2,7 +2,7 @@
 API v1 路由聚合
 """
 from fastapi import APIRouter
-from app.api.v1 import dashboard, scheduler
+from app.api.v1 import dashboard, scheduler, sync
 
 api_router = APIRouter()
 
@@ -18,4 +18,11 @@ api_router.include_router(
     scheduler.router,
     prefix="/scheduler",
     tags=["定时任务"]
+)
+
+# 注册数据同步路由
+api_router.include_router(
+    sync.router,
+    prefix="/sync",
+    tags=["数据同步"]
 )
