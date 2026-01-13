@@ -283,6 +283,25 @@ class GitHubClient:
         logger.info(f"获取到 {len(commits)} 个提交 (仓库: {owner}/{repo})")
         return commits
     
+    async def get_commit_detail(
+        self,
+        owner: str,
+        repo: str,
+        sha: str
+    ) -> Dict[str, Any]:
+        """
+        获取单个提交的详细信息
+        
+        Args:
+            owner: 仓库所有者
+            repo: 仓库名称
+            sha: 提交SHA
+            
+        Returns:
+            提交详细信息，包含文件变更、统计数据等
+        """
+        return await self._request("GET", f"/repos/{owner}/{repo}/commits/{sha}")
+    
     async def close(self):
         """关闭HTTP客户端连接"""
         await self.client.aclose()
