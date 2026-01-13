@@ -4,6 +4,7 @@
 """
 from .github_client import GitHubClient, GitHubAPIError, RateLimitError, AuthenticationError
 from .commit_parser import CommitParser
+from .data_sync_service import DataSyncService
 
 __all__ = [
     'GitHubClient',
@@ -11,4 +12,5 @@ __all__ = [
     'RateLimitError',
     'AuthenticationError',
     'CommitParser',
+    'DataSyncService',
 ]
