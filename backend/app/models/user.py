@@ -38,11 +38,12 @@ class User(Base):
     # 时间戳
     created_at = Column(TIMESTAMP, server_default=func.current_timestamp(), comment='创建时间')
     updated_at = Column(
-        TIMESTAMP, 
+        TIMESTAMP,
         server_default=func.current_timestamp(),
         onupdate=func.current_timestamp(),
         comment='更新时间'
     )
+    last_sync_at = Column(TIMESTAMP, comment='最后同步时间')
     
     # 关系定义
     repositories = relationship('Repository', back_populates='user', cascade='all, delete-orphan')

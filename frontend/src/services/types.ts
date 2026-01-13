@@ -244,3 +244,29 @@ export interface HealthCheckResponse {
   database: string
   scheduler?: string
 }
+
+/**
+ * 同步请求
+ */
+export interface SyncRequest {
+  user_id: number
+  username: string
+  github_token?: string
+  sync_mode?: 'full' | 'incremental' | 'auto'
+}
+
+/**
+ * 同步响应
+ */
+export interface SyncResponse {
+  success: boolean
+  message: string
+  username: string
+  user_id: number
+  repos_synced: number
+  commits_synced: number
+  total_additions: number
+  total_deletions: number
+  sync_mode: 'full' | 'incremental'
+  since?: string
+}

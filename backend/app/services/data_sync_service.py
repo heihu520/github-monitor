@@ -281,7 +281,8 @@ class DataSyncService:
         self,
         username: str,
         max_repos: Optional[int] = None,
-        max_commits_per_repo: int = 100
+        max_commits_per_repo: int = 100,
+        incremental: bool = True
     ) -> Dict[str, Any]:
         """
         完整同步用户数据（用户、仓库、提交）
@@ -290,26 +291,44 @@ class DataSyncService:
             username: GitHub用户名
             max_repos: 最大同步仓库数（None表示全部）
             max_commits_per_repo: 每个仓库最大同步提交数
+            incremental: 是否启用增量同步（默认True）
             
         Returns:
             同步结果统计
         """
-        logger.info(f"开始同步用户数据: {username}")
+        logger.info(f"开始同步用户数据: {username} (增量模式: {incremental})")
         
         # 1. 同步用户
         user = await self.sync_user(username)
         
-        # 2. 同步仓库
+        # 2. 确定同步起始时间
+        since = None
+        if incremental and user.last_sync_at:
+            since = user.last_sync_at.isoformat()
+            logger.info(f"增量同步，起始时间: {since}")
+        else:
+            logger.info("全量同步")
+        
+        # 3. 同步仓库
         repos = await self.sync_repositories(user)
         
         if max_repos:
             repos = repos[:max_repos]
         
-        # 3. 同步提交
+        # 4. 同步提交
         total_commits = 0
         for repo in repos:
-            commits = await self.sync_commits(user, repo, max_commits=max_commits_per_repo)
+            commits = await self.sync_commits(
+                user,
+                repo,
+                since=since,
+                max_commits=max_commits_per_repo
+            )
             total_commits += len(commits)
+        
+        # 5. 更新最后同步时间
+        user.last_sync_at = datetime.utcnow()
+        await self.db.commit()
         
         result = {
             'username': username,
@@ -317,7 +336,9 @@ class DataSyncService:
             'total_repos_synced': len(repos),
             'total_commits_synced': total_commits,
             'total_additions': user.total_additions,
-            'total_deletions': user.total_deletions
+            'total_deletions': user.total_deletions,
+            'sync_mode': 'incremental' if (incremental and since) else 'full',
+            'since': since
         }
         
         logger.info(f"完成用户数据同步: {result}")

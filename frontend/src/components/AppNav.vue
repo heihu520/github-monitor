@@ -23,6 +23,15 @@
 
         <!-- 用户区域 -->
         <div class="nav-user">
+          <TechButton
+            size="medium"
+            type="primary"
+            icon="🔄"
+            :loading="isSyncing"
+            @click="handleSync"
+          >
+            {{ isSyncing ? '同步中...' : '同步数据' }}
+          </TechButton>
           <TechButton size="medium" type="ghost" icon="⚙️">设置</TechButton>
         </div>
       </div>
@@ -33,6 +42,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import TechButton from './TechButton.vue'
+import { syncApi } from '@/services/sync'
+import { useUserStore } from '@/stores/user'
+import { useStatsStore } from '@/stores/stats'
 
 interface MenuItem {
   path: string
@@ -45,6 +57,48 @@ const menuItems = ref<MenuItem[]>([
   { path: '/trends', label: '趋势', icon: '📈' },
   { path: '/achievements', label: '成就', icon: '🏆' }
 ])
+
+const userStore = useUserStore()
+const statsStore = useStatsStore()
+
+// 同步状态
+const isSyncing = ref(false)
+
+// 同步处理函数
+const handleSync = async () => {
+  if (isSyncing.value) return
+  
+  isSyncing.value = true
+  try {
+    // 单用户应用，固定配置
+    const userId = 1
+    const username = 'heihu520'  // GitHub用户名
+    const githubToken = userStore.githubToken || undefined
+    
+    console.log(`[同步] 用户ID: ${userId}, 用户名: ${username}`)
+    
+    // 使用auto模式，后端自动判断全量/增量
+    const result = await syncApi.syncGithubData(userId, username, githubToken, 'auto')
+    
+    console.log('同步成功:', result)
+    console.log(`同步模式: ${result.sync_mode}`)
+    if (result.since) {
+      console.log(`增量同步起始时间: ${result.since}`)
+    }
+    
+    alert(`同步成功！模式: ${result.sync_mode === 'full' ? '全量' : '增量'}\n仓库: ${result.repos_synced} 个\n提交: ${result.commits_synced} 个`)
+    
+    // 同步完成后自动刷新仪表盘数据
+    console.log('开始刷新仪表盘数据...')
+    await statsStore.refreshAllData(userId)
+    console.log('仪表盘数据刷新完成')
+  } catch (error: any) {
+    console.error('同步失败:', error)
+    alert(`同步失败: ${error.message || '未知错误'}`)
+  } finally {
+    isSyncing.value = false
+  }
+}
 </script>
 
 <style scoped>
