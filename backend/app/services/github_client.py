@@ -214,6 +214,75 @@ class GitHubClient:
         logger.info(f"获取到 {len(repos)} 个仓库 (用户: {username})")
         return repos
     
+    async def get_repo_commits(
+        self,
+        owner: str,
+        repo: str,
+        since: Optional[str] = None,
+        until: Optional[str] = None,
+        per_page: int = 100,
+        max_commits: Optional[int] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        获取仓库的提交历史
+        
+        Args:
+            owner: 仓库所有者
+            repo: 仓库名称
+            since: 起始时间 (ISO 8601格式, 例如: 2024-01-01T00:00:00Z)
+            until: 结束时间 (ISO 8601格式)
+            per_page: 每页数量，最大100
+            max_commits: 最大获取提交数量，None表示获取所有
+            
+        Returns:
+            提交列表
+        """
+        commits = []
+        page = 1
+        
+        while True:
+            params = {
+                "per_page": per_page,
+                "page": page
+            }
+            
+            if since:
+                params["since"] = since
+            if until:
+                params["until"] = until
+            
+            try:
+                batch = await self._request(
+                    "GET",
+                    f"/repos/{owner}/{repo}/commits",
+                    params=params
+                )
+            except GitHubAPIError as e:
+                # 如果仓库为空或无提交，返回空列表
+                if "资源不存在" in str(e) or "404" in str(e):
+                    logger.warning(f"仓库 {owner}/{repo} 无提交或不存在")
+                    return []
+                raise
+            
+            if not batch:
+                break
+            
+            commits.extend(batch)
+            
+            # 如果设置了最大提交数，检查是否已达到
+            if max_commits and len(commits) >= max_commits:
+                commits = commits[:max_commits]
+                break
+            
+            # 如果返回数量小于per_page，说明已经是最后一页
+            if len(batch) < per_page:
+                break
+            
+            page += 1
+        
+        logger.info(f"获取到 {len(commits)} 个提交 (仓库: {owner}/{repo})")
+        return commits
+    
     async def close(self):
         """关闭HTTP客户端连接"""
         await self.client.aclose()
