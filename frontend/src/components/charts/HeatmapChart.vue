@@ -29,7 +29,8 @@ function initChart() {
   chartInstance = echarts.init(chartRef.value)
   
   // 准备数据格式 [[date, commits]]
-  const chartData = props.data.map(item => [item.date, item.commits])
+  // 确保所有数据都有值，即使是0也要显示
+  const chartData = props.data.map(item => [item.date, item.commits || 0])
   
   // 计算日期范围
   const startDate = props.data[0]?.date || new Date().toISOString().split('T')[0]
@@ -61,10 +62,10 @@ function initChart() {
     visualMap: {
       show: false,
       min: 0,
-      max: 20,
+      max: 15,
       inRange: {
         color: [
-          '#0f1419',      // 0次 - 深色背景
+          '#161b22',      // 0次 - 深色背景
           '#0e4429',      // 1-3次 - 深绿
           '#006d32',      // 4-6次 - 绿色
           '#26a641',      // 7-10次 - 亮绿
@@ -74,7 +75,7 @@ function initChart() {
     },
     calendar: {
       top: 20,
-      left: 50,
+      left: 60,
       right: 20,
       bottom: 10,
       range: [startDate, endDate],
@@ -83,19 +84,16 @@ function initChart() {
         show: true,
         lineStyle: {
           color: '#1f2937',
-          width: 2,
+          width: 1,
           type: 'solid'
         }
       },
       itemStyle: {
-        borderColor: '#0f1419',
-        borderWidth: 3
+        borderColor: '#1f2937',
+        borderWidth: 1
       },
       yearLabel: {
-        show: true,
-        color: '#9ba3af',
-        fontSize: 14,
-        fontWeight: 600
+        show: false
       },
       monthLabel: {
         show: true,
@@ -158,5 +156,6 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   min-height: 200px;
+  background: transparent;
 }
 </style>

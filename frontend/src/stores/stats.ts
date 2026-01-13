@@ -117,6 +117,7 @@ export const useStatsStore = defineStore('stats', () => {
   const isLoading = ref<boolean>(false)
   const error = ref<string | null>(null)
   const lastUpdated = ref<Date | null>(null)
+  const lastOverview = ref<any>(null)
 
   // 计算属性：今日趋势（与昨日对比）
   const todayTrend = computed(() => {
@@ -224,7 +225,7 @@ export const useStatsStore = defineStore('stats', () => {
       if (overview.heatmap_data && Array.isArray(overview.heatmap_data)) {
         heatmapData.value = overview.heatmap_data.map(point => ({
           date: point.date,
-          commits: point.count,
+          commits: point.value,  // 后端使用value字段
           level: point.level
         }))
       }
@@ -234,11 +235,27 @@ export const useStatsStore = defineStore('stats', () => {
         languageStats.value = overview.language_stats.map(lang => ({
           name: lang.language,
           percentage: lang.percentage,
-          commits: 0, // 后端可扩展
+          commits: 0,
           lines: lang.lines,
           color: lang.color || '#3178c6'
         }))
       }
+      
+      // 更新最近活动（检查是否存在）
+      if (overview.recent_activities && Array.isArray(overview.recent_activities)) {
+        recentActivities.value = overview.recent_activities.map(activity => ({
+          id: activity.id,
+          icon: activity.icon,
+          title: activity.title,
+          time: activity.time,
+          type: activity.type,
+          typeLabel: activity.typeLabel,
+          timestamp: activity.timestamp
+        }))
+      }
+      
+      // 保存完整的overview数据
+      lastOverview.value = overview
       
       lastUpdated.value = new Date()
     } catch (err: any) {
@@ -542,6 +559,7 @@ export const useStatsStore = defineStore('stats', () => {
     isLoading,
     error,
     lastUpdated,
+    lastOverview,
     
     // Computed
     todayTrend,

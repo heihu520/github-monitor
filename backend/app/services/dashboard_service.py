@@ -12,7 +12,10 @@ from app.models.dashboard import (
     DashboardOverviewResponse,
     MilestoneAchievement,
     TrendPoint,
-    HeatmapData
+    HeatmapData,
+    LanguageStatResponse,
+    HourlyActivityResponse,
+    RecentActivityResponse
 )
 from app.models.user import User
 from app.models.repository import Repository
@@ -307,28 +310,39 @@ class DashboardService:
         
         return trend_data
     
-    async def get_heatmap_data(self, user_id: int, days: int = 90) -> List[HeatmapData]:
+    async def get_heatmap_data(self, user_id: int, days: int = 365) -> List[HeatmapData]:
         """
-        获取编码活跃度热力图数据
+        获取编码活跃度热力图数据（年度视图 - 完整365天）
         
         Args:
             user_id: 用户ID
-            days: 天数，默认90天
+            days: 天数，默认365天（一整年）
             
         Returns:
             List[HeatmapData]: 热力图数据列表
         """
-        # 计算日期范围
+        # 计算完整一年的日期范围
         today = date.today()
         start_date = today - timedelta(days=days - 1)
         
-        # 查询每日统计数据
+        # 调整到周边界以填满日历视图
+        # 将start_date调整到所在周的周一（weekday=0）
+        start_weekday = start_date.weekday()
+        start_date = start_date - timedelta(days=start_weekday)
+        
+        # 将today调整到所在周的周日（weekday=6）
+        end_weekday = today.weekday()
+        end_date = today
+        if end_weekday < 6:  # 如果不是周日
+            end_date = today + timedelta(days=6 - end_weekday)
+        
+        # 查询用户在此日期范围内的统计数据
         result = await self.db.execute(
             select(DailyStat).where(
                 and_(
                     DailyStat.user_id == user_id,
                     DailyStat.stat_date >= start_date,
-                    DailyStat.stat_date <= today
+                    DailyStat.stat_date <= end_date
                 )
             ).order_by(DailyStat.stat_date)
         )
@@ -337,11 +351,11 @@ class DashboardService:
         # 创建日期到统计数据的映射
         stats_map = {stat.stat_date: stat for stat in daily_stats}
         
-        # 生成完整的热力图数据
+        # 生成完整的热力图数据（填充所有日期）
         heatmap_data = []
-        for i in range(days):
-            current_date = start_date + timedelta(days=i)
-            stat = stats_map.get(current_date)
+        current = start_date
+        while current <= end_date:
+            stat = stats_map.get(current)
             commits = stat.commits if stat else 0
             
             # 根据提交数计算活跃度等级 0-4
@@ -358,13 +372,167 @@ class DashboardService:
             
             heatmap_data.append(
                 HeatmapData(
-                    date=current_date.isoformat(),
+                    date=current.isoformat(),
                     value=commits,
                     level=level
                 )
             )
+            
+            current += timedelta(days=1)
         
         return heatmap_data
+    
+    async def get_language_stats(self, user_id: int) -> list[LanguageStatResponse]:
+        """获取语言统计"""
+        result = await self.db.execute(
+            select(
+                CommitDetail.primary_language,
+                func.sum(CommitDetail.additions + CommitDetail.deletions).label('lines')
+            ).where(
+                and_(
+                    CommitDetail.user_id == user_id,
+                    CommitDetail.primary_language.isnot(None),
+                    CommitDetail.primary_language != ''
+                )
+            ).group_by(CommitDetail.primary_language)
+        )
+        
+        lang_data = result.all()
+        total_lines = sum(row.lines for row in lang_data)
+        
+        if total_lines == 0:
+            return []
+        
+        # 语言颜色映射（多样化配色）
+        color_map = {
+            'Python': '#3776ab',
+            'JavaScript': '#f7df1e',
+            'TypeScript': '#3178c6',
+            'Vue': '#42b883',
+            'Java': '#ea2d2e',
+            'Go': '#00add8',
+            'Rust': '#ce422b',
+            'C++': '#00599c',
+            'C': '#a8b9cc',
+            'HTML': '#e34c26',
+            'CSS': '#1572b6',
+            'YAML': '#cb171e',
+            'Markdown': '#083fa1',
+            'JSON': '#292929',
+            'React': '#61dafb',
+            'SQL': '#e38c00',
+            'Shell': '#89e051',
+            'Ruby': '#cc342d',
+            'PHP': '#777bb4',
+            'Swift': '#fa7343',
+            'Kotlin': '#7f52ff',
+            'Dart': '#00b4ab'
+        }
+        
+        return [
+            LanguageStatResponse(
+                language=row.primary_language,
+                lines=row.lines,
+                percentage=round((row.lines / total_lines) * 100, 2),
+                color=color_map.get(row.primary_language, '#94a3b8')
+            )
+            for row in lang_data
+        ]
+    
+    async def get_hourly_activity(self, user_id: int) -> list[HourlyActivityResponse]:
+        """获取时段活动统计"""
+        result = await self.db.execute(
+            select(
+                func.extract('hour', CommitDetail.commit_date).label('hour'),
+                func.count(CommitDetail.id).label('commits'),
+                func.sum(CommitDetail.additions).label('additions'),
+                func.sum(CommitDetail.deletions).label('deletions')
+            ).where(
+                CommitDetail.user_id == user_id
+            ).group_by(func.extract('hour', CommitDetail.commit_date))
+        )
+        
+        hourly_data = {int(row.hour): row for row in result.all()}
+        
+        return [
+            HourlyActivityResponse(
+                hour=h,
+                commits=hourly_data[h].commits if h in hourly_data else 0,
+                additions=hourly_data[h].additions if h in hourly_data else 0,
+                deletions=hourly_data[h].deletions if h in hourly_data else 0
+            )
+            for h in range(24)
+        ]
+    
+    async def get_recent_activities(self, user_id: int, limit: int = 10) -> list:
+        """获取最近活动"""
+        result = await self.db.execute(
+            select(CommitDetail)
+            .where(CommitDetail.user_id == user_id)
+            .order_by(desc(CommitDetail.commit_date))
+            .limit(limit)
+        )
+        
+        commits = result.scalars().all()
+        
+        activities = []
+        for commit in commits:
+            # 解析提交类型
+            message = commit.commit_message.lower()
+            if message.startswith('feat'):
+                commit_type = 'feat'
+                icon = '✨'
+                type_label = '功能'
+            elif message.startswith('fix'):
+                commit_type = 'fix'
+                icon = '🐛'
+                type_label = '修复'
+            elif message.startswith('docs'):
+                commit_type = 'docs'
+                icon = '📝'
+                type_label = '文档'
+            elif message.startswith('style'):
+                commit_type = 'style'
+                icon = '💄'
+                type_label = '样式'
+            elif message.startswith('refactor'):
+                commit_type = 'refactor'
+                icon = '♻️'
+                type_label = '重构'
+            elif message.startswith('perf'):
+                commit_type = 'perf'
+                icon = '⚡'
+                type_label = '性能'
+            else:
+                commit_type = 'other'
+                icon = '📦'
+                type_label = '其他'
+            
+            # 计算相对时间
+            now = datetime.now()
+            commit_time = commit.commit_date.replace(tzinfo=None) if commit.commit_date.tzinfo else commit.commit_date
+            delta = now - commit_time
+            
+            if delta.days > 0:
+                time_str = f"{delta.days}天前"
+            elif delta.seconds >= 3600:
+                time_str = f"{delta.seconds // 3600}小时前"
+            elif delta.seconds >= 60:
+                time_str = f"{delta.seconds // 60}分钟前"
+            else:
+                time_str = "刚刚"
+            
+            activities.append({
+                'id': commit.id,
+                'icon': icon,
+                'title': commit.commit_message.split('\n')[0][:100],  # 只取第一行，最多100字符
+                'time': time_str,
+                'type': commit_type,
+                'typeLabel': type_label,
+                'timestamp': int(commit.commit_date.timestamp())
+            })
+        
+        return activities
     
     async def get_dashboard_overview(self, user_id: int) -> DashboardOverviewResponse:
         """
@@ -380,11 +548,23 @@ class DashboardService:
         stats = await self.get_dashboard_stats(user_id)
         milestones = await self.get_milestones(user_id)
         trend_data = await self.get_trend_data(user_id, days=7)
-        heatmap_data = await self.get_heatmap_data(user_id, days=90)
+        heatmap_data = await self.get_heatmap_data(user_id, days=365)
+        language_stats = await self.get_language_stats(user_id)
+        hourly_activity = await self.get_hourly_activity(user_id)
+        recent_activities_data = await self.get_recent_activities(user_id, limit=10)
+        
+        # 转换为响应模型
+        recent_activities = [
+            RecentActivityResponse(**activity)
+            for activity in recent_activities_data
+        ]
         
         return DashboardOverviewResponse(
             stats=stats,
             milestones=milestones,
             trend_data=trend_data,
-            heatmap_data=heatmap_data
+            heatmap_data=heatmap_data,
+            language_stats=language_stats,
+            hourly_activity=hourly_activity,
+            recent_activities=recent_activities
         )

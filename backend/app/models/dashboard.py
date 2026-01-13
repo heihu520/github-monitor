@@ -70,6 +70,33 @@ class HeatmapData(BaseModel):
     level: int = Field(description="活跃度等级 0-4")
 
 
+class LanguageStatResponse(BaseModel):
+    """语言统计响应"""
+    language: str = Field(description="编程语言")
+    lines: int = Field(description="代码行数")
+    percentage: float = Field(description="占比百分比")
+    color: Optional[str] = Field(None, description="颜色")
+
+
+class HourlyActivityResponse(BaseModel):
+    """时段活动响应"""
+    hour: int = Field(description="小时 0-23")
+    commits: int = Field(description="提交数")
+    additions: int = Field(description="新增行数")
+    deletions: int = Field(description="删除行数")
+
+
+class RecentActivityResponse(BaseModel):
+    """最近活动响应"""
+    id: int = Field(description="提交ID")
+    icon: str = Field(description="图标")
+    title: str = Field(description="提交标题")
+    time: str = Field(description="相对时间")
+    type: str = Field(description="提交类型")
+    typeLabel: str = Field(description="类型标签")
+    timestamp: int = Field(description="时间戳")
+
+
 class DashboardOverviewResponse(BaseModel):
     """仪表板总览响应 - 完整数据"""
     
@@ -77,6 +104,9 @@ class DashboardOverviewResponse(BaseModel):
     milestones: List[MilestoneAchievement] = Field(description="里程碑成就列表")
     trend_data: List[TrendPoint] = Field(description="最近7天趋势数据")
     heatmap_data: List[HeatmapData] = Field(description="编码活跃度热力图数据")
+    language_stats: List[LanguageStatResponse] = Field(default_factory=list, description="语言统计")
+    hourly_activity: List[HourlyActivityResponse] = Field(default_factory=list, description="时段活动")
+    recent_activities: List[RecentActivityResponse] = Field(default_factory=list, description="最近活动")
     
     class Config:
         json_schema_extra = {

@@ -62,7 +62,7 @@ export interface TrendPoint {
  */
 export interface HeatmapData {
   date: string      // 日期 (YYYY-MM-DD)
-  count: number     // 活动次数
+  value: number     // 活动次数（提交数）
   level: number     // 活跃级别 (0-4)
 }
 
@@ -87,6 +87,19 @@ export interface HourlyActivity {
 }
 
 /**
+ * 最近活动
+ */
+export interface RecentActivity {
+  id: number
+  icon: string
+  title: string
+  time: string
+  type: string
+  typeLabel: string
+  timestamp: number
+}
+
+/**
  * 仪表板总览数据
  */
 export interface DashboardOverview {
@@ -96,6 +109,7 @@ export interface DashboardOverview {
   heatmap_data: HeatmapData[]
   language_stats: LanguageStat[]
   hourly_activity: HourlyActivity[]
+  recent_activities: RecentActivity[]
 }
 
 /**
