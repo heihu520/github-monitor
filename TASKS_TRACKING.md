@@ -12,7 +12,10 @@
 | init-frontend-mvp | 48 | 48 | 0 | 0 | 100% |
 | add-personal-coding-insights (原) | 33 | 5 | 0 | 28 | 15% |
 | **前端细化任务** | **37** | **2** | **0** | **35** | **5%** |
-| **总计** | **118** | **55** | **0** | **63** | **47%** |
+| frontend-backend-sync-integration | 13 | 0 | 0 | 13 | 0% |
+| frontend-real-api-integration | 13 | 0 | 0 | 13 | 0% |
+| **简化数据同步功能** | **10** | **0** | **0** | **10** | **0%** |
+| **总计** | **154** | **55** | **0** | **99** | **36%** |
 
 ---
 
@@ -1115,6 +1118,112 @@
 9. SYNC-BE-004: 添加同步历史记录
 
 **总计**: 10个任务，预计10-12小时
+
+---
+
+## 📋 变更提案六：简化数据同步功能（优先执行）
+
+### 后端同步API (0/4)
+
+**SYNC-BE-001**: 创建一键同步API（POST /api/v1/sync/github）
+- [ ] 实现POST /api/v1/sync/github端点
+- [ ] 接收user_id和username参数
+- [ ] 触发完整数据同步流程（DataSyncService）
+- [ ] 返回同步结果（repos_synced, commits_synced）
+**优先级**: 高
+**预计时间**: 2小时
+
+**SYNC-BE-002**: 实现同步进度推送（可选）
+- [ ] 创建WebSocket/SSE端点或轮询状态API
+- [ ] 推送同步进度（当前仓库、完成百分比）
+- [ ] 推送错误信息
+**优先级**: 中
+**预计时间**: 2小时
+
+**SYNC-BE-003**: 集成统计脚本到同步流程
+- [ ] 修改DataSyncService.sync_user_data
+- [ ] 同步完成后自动调用update_user_stats.py
+- [ ] 自动调用update_daily_stats.py
+- [ ] 错误处理和日志记录
+**优先级**: 高
+**预计时间**: 1.5小时
+
+**SYNC-BE-004**: 添加同步历史记录（可选）
+- [ ] 创建sync_history表
+- [ ] 记录每次同步时间、状态、数量
+- [ ] 实现GET /api/v1/sync/history端点
+**优先级**: 低
+**预计时间**: 1小时
+
+### 前端同步功能 (0/4)
+
+**SYNC-FE-001**: 添加同步按钮到header
+- [ ] 在DashboardView header_content中添加"同步数据"按钮
+- [ ] 实现按钮点击事件处理
+- [ ] 添加loading状态显示
+- [ ] 添加成功/失败toast提示
+**优先级**: 高
+**预计时间**: 1小时
+
+**SYNC-FE-002**: 创建同步API服务
+- [ ] 创建frontend/src/services/sync.ts
+- [ ] 实现triggerSync(userId, username)方法
+- [ ] 实现getSyncStatus(taskId)方法（可选）
+- [ ] 添加TypeScript类型定义
+**优先级**: 高
+**预计时间**: 45分钟
+
+**SYNC-FE-003**: 实现同步进度显示（可选）
+- [ ] 创建SyncProgress.vue组件
+- [ ] 显示进度条和当前步骤文字
+- [ ] 处理同步完成/失败状态
+**优先级**: 中
+**预计时间**: 1.5小时
+
+**SYNC-FE-004**: 同步完成后自动刷新
+- [ ] 监听同步完成事件
+- [ ] 自动调用statsStore.fetchDashboardData
+- [ ] 显示刷新成功提示
+- [ ] 更新最后同步时间显示
+**优先级**: 高
+**预计时间**: 30分钟
+
+### 共享功能 (0/2)
+
+**SYNC-SHARED-001**: 更新TypeScript类型
+- [ ] 更新frontend/src/services/types.ts
+- [ ] 添加SyncRequest接口
+- [ ] 添加SyncResponse接口
+- [ ] 添加SyncStatus接口
+**优先级**: 高
+**预计时间**: 30分钟
+
+**SYNC-SHARED-002**: 自动更新任务追踪文档
+- [ ] 每个任务完成后更新TASKS_TRACKING.md
+- [ ] 标记完成状态 [x]
+- [ ] 添加完成时间戳
+- [ ] 记录交付物
+**优先级**: 中
+**预计时间**: 持续进行
+
+### 任务优先级排序
+
+**Phase 1 - 核心同步功能** (必须完成，4个任务，4-5小时)
+1. SYNC-BE-001: 创建一键同步API
+2. SYNC-BE-003: 集成统计脚本到同步流程
+3. SYNC-FE-001: 添加同步按钮到header
+4. SYNC-FE-002: 创建同步API服务
+
+**Phase 2 - UI增强** (必须完成，2个任务，2小时)
+5. SYNC-FE-004: 同步完成后自动刷新
+6. SYNC-SHARED-001: 更新TypeScript类型
+
+**Phase 3 - 高级功能** (可选，3个任务，4-5小时)
+7. SYNC-BE-002: 实现同步进度推送
+8. SYNC-FE-003: 实现同步进度显示
+9. SYNC-BE-004: 添加同步历史记录
+
+**总计**: 10个任务，核心6个（必须），可选4个，预计6-7小时（核心）
 
 ---
 
