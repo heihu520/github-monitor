@@ -52,7 +52,7 @@ async def sync_user_data(username: str, full_sync: bool = False):
             
             # 2. 同步仓库列表
             print("\n[2/3] 同步仓库列表...")
-            repos = await sync_service.sync_user_repositories(user.id, username)
+            repos = await sync_service.sync_repositories(user)
             print(f"✅ 同步了 {len(repos)} 个仓库")
             
             # 3. 同步提交记录
@@ -68,17 +68,17 @@ async def sync_user_data(username: str, full_sync: bool = False):
                 days_back = 30
             
             since_date = datetime.now() - timedelta(days=days_back)
+            since_str = since_date.isoformat()
             
             total_commits = 0
             for i, repo in enumerate(repos, 1):
                 print(f"\n   [{i}/{len(repos)}] {repo.repo_name}")
                 
                 try:
-                    commits = await sync_service.sync_repository_commits(
-                        user_id=user.id,
-                        repo_id=repo.id,
-                        repo_full_name=repo.repo_name,
-                        since=since_date,
+                    commits = await sync_service.sync_commits(
+                        user=user,
+                        repository=repo,
+                        since=since_str,
                         max_commits=max_commits_per_repo
                     )
                     
@@ -92,10 +92,9 @@ async def sync_user_data(username: str, full_sync: bool = False):
                     print(f"       ✗ 错误: {e}")
                     continue
             
-            # 4. 更新用户统计
-            print("\n[4/4] 更新用户统计...")
-            await sync_service.update_user_stats(user.id)
-            print("✅ 统计数据已更新")
+            # 4. 提交事务（统计已在sync_commits中更新）
+            print("\n[4/4] 完成同步...")
+            print("✅ 所有数据已保存")
             
             # 提交所有更改
             await db.commit()
