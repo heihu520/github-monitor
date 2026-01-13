@@ -70,51 +70,52 @@ class DashboardService:
                 code_lines=0
             )
         
-        # 计算时间范围
-        today = date.today()
+        # 计算时间范围（使用UTC时间，因为commit_date存储的是UTC）
+        now_utc = datetime.utcnow()
+        today = now_utc.date()
         week_ago = today - timedelta(days=7)
         month_ago = today - timedelta(days=30)
         
-        # 今日统计
+        # 今日统计（使用DailyStat表，避免时区问题）
         today_stats_result = await self.db.execute(
             select(
-                func.count(CommitDetail.id).label('commits'),
-                func.coalesce(func.sum(CommitDetail.additions), 0).label('additions'),
-                func.coalesce(func.sum(CommitDetail.deletions), 0).label('deletions')
+                DailyStat.commits,
+                DailyStat.additions,
+                DailyStat.deletions
             ).where(
                 and_(
-                    CommitDetail.user_id == user_id,
-                    func.date(CommitDetail.commit_date) == today
+                    DailyStat.user_id == user_id,
+                    DailyStat.stat_date == today
                 )
             )
         )
         today_stats = today_stats_result.first()
         
-        # 本周统计
+        # 本周统计（使用DailyStat表）
         week_stats_result = await self.db.execute(
             select(
-                func.count(CommitDetail.id).label('commits'),
-                func.coalesce(func.sum(CommitDetail.additions), 0).label('additions'),
-                func.coalesce(func.sum(CommitDetail.deletions), 0).label('deletions')
+                func.coalesce(func.sum(DailyStat.commits), 0).label('commits'),
+                func.coalesce(func.sum(DailyStat.additions), 0).label('additions'),
+                func.coalesce(func.sum(DailyStat.deletions), 0).label('deletions')
             ).where(
                 and_(
-                    CommitDetail.user_id == user_id,
-                    func.date(CommitDetail.commit_date) >= week_ago
+                    DailyStat.user_id == user_id,
+                    DailyStat.stat_date >= week_ago
                 )
             )
         )
         week_stats = week_stats_result.first()
         
-        # 本月统计
+        # 本月统计（使用DailyStat表）
         month_stats_result = await self.db.execute(
             select(
-                func.count(CommitDetail.id).label('commits'),
-                func.coalesce(func.sum(CommitDetail.additions), 0).label('additions'),
-                func.coalesce(func.sum(CommitDetail.deletions), 0).label('deletions')
+                func.coalesce(func.sum(DailyStat.commits), 0).label('commits'),
+                func.coalesce(func.sum(DailyStat.additions), 0).label('additions'),
+                func.coalesce(func.sum(DailyStat.deletions), 0).label('deletions')
             ).where(
                 and_(
-                    CommitDetail.user_id == user_id,
-                    func.date(CommitDetail.commit_date) >= month_ago
+                    DailyStat.user_id == user_id,
+                    DailyStat.stat_date >= month_ago
                 )
             )
         )
@@ -508,8 +509,8 @@ class DashboardService:
                 icon = '📦'
                 type_label = '其他'
             
-            # 计算相对时间
-            now = datetime.now()
+            # 计算相对时间（使用UTC时间，数据库存储的是UTC）
+            now = datetime.utcnow()
             commit_time = commit.commit_date.replace(tzinfo=None) if commit.commit_date.tzinfo else commit.commit_date
             delta = now - commit_time
             
