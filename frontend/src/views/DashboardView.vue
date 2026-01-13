@@ -47,38 +47,29 @@
 
         <!-- 图表区域 -->
         <div class="charts-section">
-          <TechCard title="📈 提交趋势" icon="📈" class="chart-card">
+          <TechCard title="提交趋势" icon="📈" class="chart-card">
             <div class="chart-container">
-              <div class="chart-placeholder">
-                <p class="placeholder-text">图表区域 - 等待集成ECharts</p>
-                <p class="placeholder-hint">这里将显示7天提交趋势折线图</p>
-              </div>
+              <CommitTrendChart :data="trendData" />
             </div>
           </TechCard>
 
           <div class="chart-grid">
-            <TechCard title="💻 语言分布" icon="💻" class="chart-card">
+            <TechCard title="语言分布" icon="💻" class="chart-card">
               <div class="chart-container chart-small">
-                <div class="chart-placeholder">
-                  <p class="placeholder-text">饼图</p>
-                  <p class="placeholder-hint">编程语言使用占比</p>
-                </div>
+                <LanguagePieChart :data="languageStats" />
               </div>
             </TechCard>
 
-            <TechCard title="⏰ 时段分析" icon="⏰" class="chart-card">
+            <TechCard title="时段分析" icon="⏰" class="chart-card">
               <div class="chart-container chart-small">
-                <div class="chart-placeholder">
-                  <p class="placeholder-text">柱状图</p>
-                  <p class="placeholder-hint">24小时活跃度分布</p>
-                </div>
+                <HourlyActivityChart />
               </div>
             </TechCard>
           </div>
         </div>
 
         <!-- 最近活动 -->
-        <TechCard title="🕐 最近活动" icon="🕐" class="activity-card">
+        <TechCard title="最近活动" icon="🕐" class="activity-card">
           <div class="activity-list">
             <div 
               v-for="activity in recentActivities" 
@@ -106,6 +97,9 @@ import { onMounted, computed } from 'vue'
 import AppNav from '@/components/AppNav.vue'
 import TechCard from '@/components/TechCard.vue'
 import StatCard from '@/components/StatCard.vue'
+import CommitTrendChart from '@/components/CommitTrendChart.vue'
+import LanguagePieChart from '@/components/LanguagePieChart.vue'
+import HourlyActivityChart from '@/components/HourlyActivityChart.vue'
 import { useStatsStore } from '@/stores'
 
 // 使用统计数据 store
@@ -114,6 +108,8 @@ const statsStore = useStatsStore()
 // 从 store 获取数据
 const stats = computed(() => statsStore.dashboardStats)
 const recentActivities = computed(() => statsStore.recentActivities)
+const trendData = computed(() => statsStore.trendData)
+const languageStats = computed(() => statsStore.languageStats)
 const todayTrend = computed(() => statsStore.todayTrend)
 const weekTrend = computed(() => statsStore.weekTrend)
 

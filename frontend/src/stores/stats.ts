@@ -216,12 +216,16 @@ export const useStatsStore = defineStore('stats', () => {
       // const response = await api.getLanguageStats()
       // updateLanguageStats(response.data)
       
-      // 暂时使用模拟数据
+      // 暂时使用模拟数据 - 更多编程语言
       updateLanguageStats([
-        { name: 'TypeScript', percentage: 45, commits: 120, lines: 5400, color: '#3178c6' },
-        { name: 'Python', percentage: 30, commits: 80, lines: 3600, color: '#3776ab' },
-        { name: 'JavaScript', percentage: 15, commits: 40, lines: 1800, color: '#f7df1e' },
-        { name: 'Vue', percentage: 10, commits: 25, lines: 1200, color: '#42b883' }
+        { name: 'TypeScript', percentage: 28, commits: 95, lines: 4200, color: '#3178c6' },
+        { name: 'Python', percentage: 22, commits: 75, lines: 3500, color: '#3776ab' },
+        { name: 'JavaScript', percentage: 18, commits: 60, lines: 2800, color: '#f7df1e' },
+        { name: 'Vue', percentage: 12, commits: 40, lines: 1800, color: '#42b883' },
+        { name: 'Go', percentage: 8, commits: 28, lines: 1200, color: '#00add8' },
+        { name: 'Rust', percentage: 6, commits: 20, lines: 900, color: '#ce422b' },
+        { name: 'Java', percentage: 4, commits: 15, lines: 600, color: '#ea2d2e' },
+        { name: 'C++', percentage: 2, commits: 7, lines: 300, color: '#00599c' }
       ])
     } catch (error) {
       console.error('Failed to fetch language stats:', error)
