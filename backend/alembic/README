@@ -1,0 +1,57 @@
+# Alembic 数据库迁移
+
+Generic single-database configuration for GitHub Monitor project.
+
+## 使用指南
+
+### 1. 初始化迁移（首次）
+```bash
+cd backend
+alembic init alembic  # 已完成，跳过此步
+```
+
+### 2. 创建迁移脚本
+```bash
+# 自动生成迁移（基于模型变更）
+alembic revision --autogenerate -m "描述信息"
+
+# 手动创建空迁移
+alembic revision -m "描述信息"
+```
+
+### 3. 查看迁移历史
+```bash
+alembic history
+alembic current
+```
+
+### 4. 执行迁移
+```bash
+# 升级到最新版本
+alembic upgrade head
+
+# 升级到指定版本
+alembic upgrade <revision_id>
+
+# 升级一个版本
+alembic upgrade +1
+```
+
+### 5. 回滚迁移
+```bash
+# 回滚到上一个版本
+alembic downgrade -1
+
+# 回滚到指定版本
+alembic downgrade <revision_id>
+
+# 回滚所有
+alembic downgrade base
+```
+
+## 注意事项
+
+1. 本项目已使用SQL脚本初始化，Alembic用于后续变更管理
+2. 生产环境务必先备份数据库再执行迁移
+3. 迁移文件会生成在 `alembic/versions/` 目录
+4. 确保数据库连接配置正确（alembic.ini）
